@@ -22,7 +22,7 @@ set(SOURCE_FILES
         src/streams/InStream.h
         src/streams/FileInputStream.cpp
         src/streams/FileInputStream.h
-        src/streams/streams.h src/api/SkillException.cpp src/api/SkillException.h)
+        src/streams/streams.h src/api/SkillException.cpp src/api/SkillException.h src/streams/MappedInStream.cpp src/streams/MappedInStream.h)
 add_executable(runTests ${SOURCE_FILES})
 
 # Link test executable against gtest & gtest_main

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "InStream.h"
+#include "MappedInStream.h"
 
 namespace skill {
     namespace streams {
@@ -37,6 +38,17 @@ namespace skill {
              * close the stream
              */
             virtual ~FileInputStream();
+
+            /**
+            * Maps from current position until offset.
+            *
+            * @return a buffer that has exactly offset many bytes remaining
+            */
+            MappedInStream* jumpAndMap(int offset) {
+                auto r = new MappedInStream(base, position, position + offset);
+                position += offset;
+                return r;
+            }
         };
     }
 }
