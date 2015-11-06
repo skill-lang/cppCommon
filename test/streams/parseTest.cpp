@@ -1,0 +1,45 @@
+//
+// Created by feldentm on 03.11.15.
+//
+
+#include <gtest/gtest.h>
+#include "../../src/streams/streams.h"
+#include "../../src/api/SkillException.h"
+#include "../../src/internal/FileParser.h"
+
+using namespace skill::streams;
+
+namespace parseTest {
+    using namespace skill::api;
+    using namespace skill::internal;
+
+    //!create a new pool in the target type system
+    AbstractStoragePool *testPool(skill::TypeID typeID,
+                                  const std::string *name,
+                                  AbstractStoragePool *superPool,
+                                  std::set<TypeRestriction> *restrictions) {
+        return nullptr;
+    }
+
+    //! create a new state in the target type system
+    SkillFile *testMake(FileInputStream *in,
+                        WriteMode mode,
+                        StringPool *String,
+                        AnnotationType *Annotation,
+                        std::vector<AbstractStoragePool *> *types,
+                        std::map<std::string, AbstractStoragePool *> *typesByName,
+                        std::vector<MappedInStream *> &dataList) {
+        return nullptr;
+    }
+
+    SkillFile *open(std::string path) {
+        return skill::internal::parseFile<testPool, testMake>(new FileInputStream(path), readOnly);
+    }
+}
+using namespace parseTest;
+
+TEST(Parser, Empty) {
+    auto s = open("emptyBlocks.sf");
+    ASSERT_TRUE(nullptr == s);
+    //delete s;
+}

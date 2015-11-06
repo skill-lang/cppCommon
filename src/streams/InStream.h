@@ -115,15 +115,21 @@ namespace skill {
             }
 
             inline float f32() {
-                float rval;
-                *((uint32_t *) &rval) = i32();
-                return rval;
+                register union {
+                    uint32_t i;
+                    float f;
+                } result;
+                result.i = i32();
+                return result.f;
             }
 
             inline double f64() {
-                double rval;
-                *((uint64_t *) &rval) = i64();
-                return rval;
+                register union {
+                    uint64_t i;
+                    double f;
+                } result;
+                result.i = i64();
+                return result.f;
             }
 
             bool boolean() {
@@ -136,7 +142,7 @@ namespace skill {
              */
             std::string *string(int length) {
                 assert(position + length <= end);
-                auto rval = new std::string((const char*)position, length);
+                auto rval = new std::string((const char *) position, length);
                 position = position + length;
                 return rval;
             }

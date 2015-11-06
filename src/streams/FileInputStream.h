@@ -40,14 +40,28 @@ namespace skill {
             virtual ~FileInputStream();
 
             /**
+             * tell the caller which file we belong to
+             */
+            const std::string &getPath() {
+                return path;
+            }
+
+            /**
             * Maps from current position until offset.
             *
             * @return a buffer that has exactly offset many bytes remaining
             */
-            MappedInStream* jumpAndMap(int offset) {
+            MappedInStream *jumpAndMap(long offset) {
                 auto r = new MappedInStream(base, position, position + offset);
                 position += offset;
                 return r;
+            }
+
+            /**
+             * skip a part of the file
+             */
+            void jump(long offset) {
+                position += offset;
             }
         };
     }

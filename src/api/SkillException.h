@@ -6,6 +6,7 @@
 #define SKILL_CPP_COMMON_SKILLEXCEPTION_H
 
 #include <string>
+#include "../streams/InStream.h"
 
 namespace skill {
 
@@ -22,6 +23,13 @@ namespace skill {
         const std::string message;
 
         SkillException(std::string message);
+
+        /**
+         * creates a parse exception
+         */
+        static SkillException ParseException(streams::InStream* stream, int blockCount, std::string msg, SkillException& cause){
+
+        }
     };
     
 }

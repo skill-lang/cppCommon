@@ -17,12 +17,18 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 set(SOURCE_FILES
         src/utils.h
+        test/streams/parseTest.cpp
         test/streams/streamTest.cpp
         src/streams/InStream.cpp
         src/streams/InStream.h
         src/streams/FileInputStream.cpp
         src/streams/FileInputStream.h
-        src/streams/streams.h src/api/SkillException.cpp src/api/SkillException.h src/streams/MappedInStream.cpp src/streams/MappedInStream.h)
+        src/streams/streams.h
+        src/api/SkillException.cpp
+        src/api/SkillException.h
+        src/streams/MappedInStream.cpp
+        src/streams/MappedInStream.h
+        src/internal/FileParser.h src/internal/AbstractStoragePool.cpp src/internal/AbstractStoragePool.h src/internal/StoragePool.cpp src/internal/StoragePool.h src/api/SkillFile.cpp src/api/SkillFile.h src/internal/SkillState.cpp src/internal/SkillState.h src/api/StringAccess.cpp src/api/StringAccess.h src/internal/StringPool.cpp src/internal/StringPool.h src/api/String.cpp src/api/String.h src/api/Box.h src/api/Object.cpp src/api/Object.h src/common.h)
 add_executable(runTests ${SOURCE_FILES})
 
 # Link test executable against gtest & gtest_main

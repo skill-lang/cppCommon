@@ -9,9 +9,12 @@
 
 using namespace skill::streams;
 
-FileInputStream *open(std::string path = std::string("date.sf")) {
-    return new FileInputStream(path);
+namespace streamTest {
+    FileInputStream *open(std::string path = std::string("date.sf")) {
+        return new FileInputStream(path);
+    }
 }
+using namespace streamTest;
 
 TEST(Streams, Open) {
     auto s = open("emptyBlocks.sf");
