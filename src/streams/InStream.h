@@ -8,10 +8,12 @@
 #include <string>
 #include <cassert>
 #include <cstdint>
-#include <stdint-gcc.h>
+#include "../api/String.h"
 
 namespace skill {
     namespace streams {
+
+        using skill::api::String;
 
         /**
         * Abstract input streams.
@@ -140,9 +142,10 @@ namespace skill {
              * create a string from the stream
              * @note the caller owns the string!
              */
-            std::string *string(int length) {
+            String string(int length, SKilLID id) {
                 assert(position + length <= end);
-                auto rval = new std::string((const char *) position, length);
+                assert(id > 0);
+                String rval = new api::string_t((const char *) position, length, id);
                 position = position + length;
                 return rval;
             }

@@ -5,7 +5,9 @@
 #ifndef SKILL_CPP_COMMON_SKILLFILE_H
 #define SKILL_CPP_COMMON_SKILLFILE_H
 
-#include <string>
+#include <unordered_map>
+#include "String.h"
+#include "../internal/AbstractStoragePool.h"
 
 namespace skill {
     namespace api {
@@ -17,6 +19,15 @@ namespace skill {
         enum WriteMode {
             write, append, readOnly
         };
+
+        /**
+         * the type of the type by name mapping
+         */
+        typedef std::unordered_map<
+                api::String,
+                internal::AbstractStoragePool *,
+                equalityHash,
+                equalityEquals> typeByName_t;
 
 
         /**

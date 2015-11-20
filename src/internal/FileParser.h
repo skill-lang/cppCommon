@@ -8,26 +8,96 @@
 #include <set>
 #include <vector>
 #include <map>
+#include <unordered_map>
+#include <string>
 
 #include "../streams/FileInputStream.h"
 #include "AbstractStoragePool.h"
 #include "../api/SkillFile.h"
 #include "../common.h"
+#include "StringPool.h"
+#include "../api/SkillException.h"
 
 //! TODO replace by actual implementation
 typedef int TypeRestriction;
 typedef int AnnotationType;
-typedef int StringPool;
 
 namespace skill {
     using namespace streams;
-    using namespace api;
+    using namespace fieldTypes;
     namespace internal {
 
+        /**
+         * Turns a field type into a preliminary type information. In case of user types, the declaration
+         * of the respective user type may follow after the field declaration.
+         */
+        FieldType *parseFieldType(FileInputStream *in,
+                                  const std::vector<AbstractStoragePool *> *types,
+                                  StringPool *String,
+                                  AnnotationType *Annotation,
+                                  int blockCounter) {
+            const TypeID i = (TypeID) in->v64();
+            switch (i) {/*
+                case 0 :
+                    ConstantI8(in.i8)
+                case 1 :
+                    ConstantI16(in.i16)
+                case 2 :
+                    ConstantI32(in.i32)
+                case 3 :
+                    ConstantI64(in.i64)
+                case 4 :
+                    ConstantV64(in.v64)
+                case 5 :
+                    Annotation
+                case 6 :
+                    BoolType
+                case 7 :
+                    I8
+                case 8 :
+                    I16
+                case 9 :
+                    I32
+                case 10:
+                    I64
+                case 11:
+                    V64
+                case 12:
+                    F32
+                case 13:
+                    F64
+                case 14:
+                    String
+                case 15:
+                    ConstantLengthArray(in.v64.toInt, parseFieldType(in, types, String, Annotation, blockCounter))
+                case 17:
+                    VariableLengthArray(parseFieldType(in, types, String, Annotation, blockCounter))
+                case 18:
+                    ListType(parseFieldType(in, types, String, Annotation, blockCounter))
+                case 19:
+                    SetType(parseFieldType(in, types, String, Annotation, blockCounter))
+                case 20:
+                    MapType(parseFieldType(in, types, String, Annotation, blockCounter),
+                            parseFieldType(in, types, String, Annotation, blockCounter))
+*/
+                default:
+                    if (i >= 32 && i - 32 < (TypeID) types->size())
+                        return types->at(i - 32);
+                    else
+                        throw SkillException::ParseException(in, blockCounter,
+                                                             "Invalid type ID");
+            }
+
+        }
+
+
+        /**
+         * parses a skill file; parametrized by specification dependent functionality.
+         */
         template<
                 //!create a new pool in the target type system
                 AbstractStoragePool *newPool(TypeID typeID,
-                                             const std::string *name,
+                                             String name,
                                              AbstractStoragePool *superPool,
                                              std::set<TypeRestriction> *restrictions),
 
@@ -37,19 +107,25 @@ namespace skill {
                                      StringPool *String,
                                      AnnotationType *Annotation,
                                      std::vector<AbstractStoragePool *> *types,
-                                     std::map<std::string, AbstractStoragePool *> *typesByName,
+                                     api::typeByName_t *typesByName,
                                      std::vector<MappedInStream *> &dataList)
         >
-
         SkillFile *parseFile(FileInputStream *in, WriteMode mode) {
+            struct LFEntry {
+                LFEntry(AbstractStoragePool *const pool, int count)
+                        : pool(pool), count(count) { }
+
+                AbstractStoragePool *const pool;
+                const int count;
+            };
+
             // ERROR DETECTION
             int blockCounter = 0;
-            std::vector<std::string *> seenTypes;
 
             // PARSE STATE
-            StringPool *String = new StringPool;
+            StringPool *String = new StringPool(in);
             std::vector<AbstractStoragePool *> *types = new std::vector<AbstractStoragePool *>();
-            std::map<std::string, AbstractStoragePool *> *typesByName = new std::map<std::string, AbstractStoragePool *>();
+            api::typeByName_t *typesByName = new api::typeByName_t;
             AnnotationType *Annotation = new AnnotationType;
             std::vector<MappedInStream *> dataList;
 
@@ -65,201 +141,188 @@ namespace skill {
                         const long position = in->getPosition() + 4 * count;
                         for (int i = count; i != 0; i--) {
                             offset = in->i32();
-//                            String.stringPositions.push_back(new StringPosition(position + last, offset - last));
- //                           String.idMap.push_back(null);
+                            String->stringPositions.push_back(std::pair<long, int>(position + last, offset - last));
+                            String->idMap.push_back(nullptr);
                             last = offset;
                         }
                         in->jump(in->getPosition() + last);
                     }
 
                 } catch (SkillException e) {
-                    throw SkillException::ParseException(in, blockCounter, "corrupted string block", e);
+                    throw SkillException::ParseException(in, blockCounter, "corrupted string block");
                 }
-#if 0
+
                 // type block
                 try {
-                    var typeCount = in.v64.toInt
+                    auto typeCount = in->v64();
 
                     // this barrier is strictly increasing inside of each block and reset to 0 at the beginning of each block
-                    var
-                    blockIDBarrier :
-                    Int = 0;
+                    TypeID blockIDBarrier = 0;
+                    std::set<api::String> seenTypes;
 
-                    // reset counters and queues
-                    seenTypes.clear
-                    val resizeQueue = new ArrayBuffer[StoragePool[_, _]](typeCount)
+                    std::vector<AbstractStoragePool *> resizeQueue;
 
                     // number of fields to expect for that type in this block
-                    val localFields = new ArrayBuffer[LFEntry](typeCount)
+                    std::vector<LFEntry> localFields;
 
                     // parse type definitions
-                    while (typeCount != 0) {
-                        typeCount -= 1
-                        val name = String.get(in.v64.toInt)
+                    while (0 != typeCount--) {
+                        api::String name = String->get((SKilLID) in->v64());
 
                         // check null name
-                        if (null == name)
-                            throw ParseException(in, blockCounter, "Corrupted file, nullptr in typename")
+                        if (nullptr == name)
+                            throw SkillException::ParseException(in, blockCounter,
+                                                                 "Corrupted file, nullptr in typename");
 
                         // check duplicate types
-                        if (seenTypes.contains(name))
-                            throw ParseException(in, blockCounter, s
-                        "Duplicate definition of type $name")
+                        if (seenTypes.find(name) != seenTypes.end())
+                            throw SkillException::ParseException(
+                                    in, blockCounter,
+                                    std::string("Duplicate definition of type ").append(*name));
 
-                        seenTypes.add(name)
+                        seenTypes.insert(name);
 
-                        val count = in.v64.toInt
-                        val definition = typesByName.get(name).getOrElse {
+                        const int count = (int) in->v64();
+
+                        auto defIter = typesByName->find(name);
+                        if (defIter == typesByName->end()) {
+                            // unknown type
 
                             // type restrictions
-                            var restrictionCount = in.v64.toInt
-                            val rest = new HashSet[restrictions.TypeRestriction]
-                            rest.sizeHint(restrictionCount)
-                            while (restrictionCount != 0) {
-                                restrictionCount -= 1
+                            int restrictionCount = (int) in->v64();
+                            std::set<TypeRestriction> *rest = new std::set<TypeRestriction>;
+                            //! TODO restrictions
+                            // rest.sizeHint(restrictionCount)
+                            while (restrictionCount-- > 0) {
+                                switch ((char) in->v64()) {
+                                    case 0: //restrictions.Unique
+                                        break;
+                                    case 1: // restrictions.Singleton
+                                        break;
+                                    case 2: // restrictions.Monotone
+                                        break;
+                                    case 3: // restrictions.Abstract
+                                        break;
+                                    case 5:
+                                        in->v64(); // restrictions.DefaultTypeRestriction(in.v64.toInt)
+                                        break;
 
-                                rest += ((in.v64.toInt : @switch) match {
-                                        case 0 ⇒ restrictions.Unique
-                                        case 1 ⇒ restrictions.Singleton
-                                        case 2 ⇒ restrictions.Monotone
-                                        case 3 ⇒ restrictions.Abstract
-                                        case 5 ⇒ restrictions.DefaultTypeRestriction(in.v64.toInt)
+                                    default:
+                                        SkillException::ParseException(
+                                                in, blockCounter,
+                                                "Found an unknown field restriction. Please regenerate your binding, if possible.");
+                                }
 
-                                        case i ⇒ throw new ParseException(in, blockCounter,
-                                        s"Found unknown field restriction $i. Please regenerate your binding, if possible.", null)
-                                })
+                                // TODO rest +=
                             }
 
                             // super
-                            val superID = in.v64.toInt
-                            val
-                            superPool =
+                            const TypeID superID = (TypeID) in->v64();
+                            AbstractStoragePool *superPool;
                             if (0 == superID)
-                                null
-                                    else
-                            {
-                                if (superID > types.size)
-                                    throw ParseException(in, blockCounter, s
-                                """Type $name refers to an ill-formed super type.
-                                found:
-                                $superID
-                                current
-                                number
-                                of
-                                types:
-                                ${types.size}
-                                """)
-                                else {
-                                    val r = types(superID - 1)
-                                            assert(r != null)
-                                    r
-                                }
+                                superPool = nullptr;
+                            else if (superID > types->size()) {
+                                throw SkillException::ParseException(
+                                        in, blockCounter,
+                                        std::string("Type ").append(*name).append(
+                                                " refers to an ill-formed super type."));
+                            } else {
+                                superPool = types->at(superID - 1);
+                                assert(superPool);
                             }
 
                             // allocate pool
-                            val r = newPool(types.size + 32, name, superPool, rest)
-                            types.append(r)
-                            typesByName.put(name, r)
-                            r
-                        }
+                            AbstractStoragePool *r = newPool(
+                                    (TypeID) types->size() + 32, name, superPool, rest);
 
-                        if (blockIDBarrier < definition.typeID)
-                            blockIDBarrier = definition.typeID;
+                            types->push_back(r);
+                            defIter = typesByName->insert(
+                                    std::pair<api::String, AbstractStoragePool *>(name, r)).first;
+                        }
+                        AbstractStoragePool *const definition = defIter->second;
+
+                        if (blockIDBarrier < definition->typeID)
+                            blockIDBarrier = definition->typeID;
                         else
-                            throw new ParseException(in, blockCounter,
-                                                     s
-                        "Found unordered type block. Type $name has id ${definition.typeID}, barrier was $blockIDBarrier.");
+                            throw SkillException::ParseException(in, blockCounter, "Found unordered type block.");
 
                         // in contrast to prior implementation, bpo is the position inside of data, even if there are no actual
                         // instances. We need this behavior, because that way we can cheaply calculate the number of static instances
-                        val
-                        lbpo = definition.basePool.cachedSize + (if (null == definition.superPool) {
-                            0
-                        } else if (0 != count)
-                            in.v64().toInt
-                        else
-                            definition.superPool.blocks.last.bpo)
+                        const SKilLID lbpo =
+                                definition->basePool->cachedSize + (nullptr == definition->superPool ? 0 : (
+                                        0 != count ? (SKilLID) in->v64() :
+                                        definition->superPool->blocks.back().bpo));
 
                         // ensure that bpo is in fact inside of the parents block
-                        if (null != definition.superPool) {
-                            val b = definition.superPool.blocks.last
+                        if (definition->superPool) {
+                            const auto &b = definition->superPool->blocks.back();
                             if (lbpo < b.bpo || b.bpo + b.dynamicCount < b.bpo)
-                                throw new ParseException(in, blockCounter,
-                                                         s
-                            "Found broken bpo: $lbpo not in [${b.bpo}; ${b.bpo + b.dynamicCount}[");
+                                throw SkillException::ParseException(in, blockCounter, "Found broken bpo.");
                         }
 
                         // static count and cached size are updated in the resize phase
                         // @note we assume that all dynamic instance are static instances as well, until we know for sure
-                        definition.blocks.append(new Block(blockCounter, lbpo, count, count))
-                        definition.staticDataInstnaces += count
+                        definition->blocks.push_back(Block(blockCounter, lbpo, count, count));
+                        definition->staticDataInstnaces += count;
 
-                        resizeQueue.append(definition)
-                        localFields.append(new LFEntry(definition, in.v64.toInt))
+                        resizeQueue.push_back(definition);
+                        localFields.push_back(LFEntry(definition, in->v64()));
                     }
 
                     // resize pools, i.e. update cachedSize and staticCount
-                    locally {
-                            val ps = resizeQueue.iterator
-                            while (ps.hasNext) {
-                                val p = ps.next
-                                val b = p.blocks.last
-                                p.cachedSize += b.dynamicCount
+                    for (auto &p : resizeQueue) {
+                        const auto &b = p->blocks.back();
+                        p->cachedSize += b.dynamicCount;
 
-                                if (0 != b.dynamicCount) {
-                                    // calculate static count of our parent
-                                    val
-                                    parent :
-                                    StoragePool[_, _] = p.superPool
-                                    if (null != parent) {
-                                        val sb = parent.blocks.last
-                                        // assumed static instances, minus what static instances would be, if p were the first sub pool.
-                                        val delta = sb.staticCount - (b.bpo - sb.bpo);
-                                        // if positive, then we have to subtract it from the assumed static count (local and global)
-                                        if (delta > 0) {
-                                            sb.staticCount -= delta
-                                            parent.staticDataInstnaces -= delta
-                                        }
-                                    }
+                        if (0 != b.dynamicCount) {
+                            // calculate static count of our parent
+                            const auto &parent = p->superPool;
+                            if (parent) {
+                                auto &sb = parent->blocks.back();
+                                // assumed static instances, minus what static instances would be, if p were the first sub pool.
+                                const auto delta = sb.staticCount - (b.bpo - sb.bpo);
+                                // if positive, then we have to subtract it from the assumed static count (local and global)
+                                if (delta > 0) {
+                                    sb.staticCount -= delta;
+                                    parent->staticDataInstnaces -= delta;
                                 }
                             }
+                        }
                     }
 
                     // track offset information, so that we can create the block maps and jump to the next block directly after
                     // parsing field information
-                    var dataEnd = 0L
+                    long dataEnd = 0L;
 
                     // parse fields
-                    val es = localFields.iterator
-                    while (es.hasNext) {
-                        val e = es.next()
-                        val p = e.pool
-                        var legalFieldIDBarrier = 1 + p.dataFields.size
-                        val block = p.blocks.last
-                        var localFieldCount = e.count
-                        while (0 != localFieldCount) {
-                            localFieldCount -= 1
-                            val id = in.v64.toInt
-                            if (id <= 0 || legalFieldIDBarrier < id)
-                                throw ParseException(in, blockCounter, s
-                            "Found an illegal field ID: $id")
+                    for (const auto &e : localFields) {
+                        const auto &p = e.pool;
+                        TypeID legalFieldIDBarrier = 1 + (TypeID) p->dataFields.size();
+                        const auto &block = p->blocks.back();
+                        auto localFieldCount = e.count;
 
-                            var
-                            endOffset :
-                            Long = 0
+                        while (localFieldCount-- > 0) {
+                            const TypeID id = (TypeID) in->v64();
+                            if (id <= 0 || legalFieldIDBarrier < id)
+                                throw SkillException::ParseException(in, blockCounter,
+                                                                     "Found an illegal field ID.");
+
+                            long endOffset = 0;
                             if (id == legalFieldIDBarrier) {
                                 // new field
-                                legalFieldIDBarrier += 1
-                                val fieldName = String.get(in.v64.toInt)
-                                if (null == fieldName)
-                                    throw ParseException(in, blockCounter, s
-                                "Field ${p.name}#$id has a nullptr as name.")
+                                legalFieldIDBarrier++;
+                                const api::String fieldName = String->get((SKilLID) in->v64());
+                                if (!fieldName)
+                                    throw SkillException::ParseException(in, blockCounter,
+                                                                         "A field has a nullptr as name.");
 
-                                val t = parseFieldType(in, types, String, Annotation, blockCounter)
+                                const auto t = parseFieldType(in, types, String, Annotation, blockCounter);
 
                                 // parse field restrictions
-                                var fieldRestrictionCount = in.v64.toInt
-                                val rest = new HashSet[restrictions.FieldRestriction]
+                                int fieldRestrictionCount = (int) in->v64();
+                                //! TODO
+                                /*
+                                const auto &rest = new HashSet[restrictions.FieldRestriction]
                                 rest.sizeHint(fieldRestrictionCount)
                                 while (fieldRestrictionCount != 0) {
                                     fieldRestrictionCount -= 1
@@ -292,37 +355,35 @@ namespace skill {
                                             case i ⇒ throw new ParseException(in, blockCounter,
                                             s"Found unknown field restriction $i. Please regenerate your binding, if possible.", null)
                                     })
-                                }
-                                endOffset = in.v64
+                                }*/
+                                endOffset = in->v64();
 
-                                val f = p.addField(id, t, fieldName, rest)
-                                f.addChunk(new BulkChunk(dataEnd, endOffset, p.cachedSize, p.blocks.size))
+                                auto f = p->addField(id, t, fieldName/*, rest*/);
+                                f->addChunk(
+                                        new BulkChunk(dataEnd, endOffset, p->cachedSize, p->blocks.size()));
                             } else {
                                 // known field
-                                endOffset = in.v64
-                                p.dataFields(id - 1).addChunk(
-                                        new SimpleChunk(dataEnd, endOffset, block.dynamicCount, block.bpo))
+                                endOffset = in->v64();
+                                p->dataFields[id - 1]->addChunk(
+                                        new SimpleChunk(dataEnd, endOffset, block.dynamicCount, block.bpo));
                             }
-                            dataEnd = endOffset
+                            dataEnd = endOffset;
                         }
                     }
 
                     // jump over data and continue in the next block
-                    dataList.append(in.jumpAndMap(dataEnd.toInt))
-                } catch {
-                    case e :
-                        SkillException ⇒ throw e
-                    case e :
-                        Exception      ⇒ throw ParseException(in, blockCounter, "unexpected foreign exception", e)
+                    dataList.push_back(in->jumpAndMap(dataEnd));
+                } catch (SkillException e) {
+                    throw e;
+                } catch (...) {
+                    throw SkillException::ParseException(in, blockCounter, "unexpected foreign exception");
                 }
 
-                blockCounter += 1
-                seenTypes.clear()
+                blockCounter++;
             }
-#endif
-                // note there still isn't a single instance
-                return makeState(in, mode, String, Annotation, types, typesByName, dataList);
-            }
+
+            // note there still isn't a single instance
+            return makeState(in, mode, String, Annotation, types, typesByName, dataList);
         }
     }
 }

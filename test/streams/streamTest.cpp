@@ -110,7 +110,7 @@ TEST(Streams, Boolean) {
 TEST(Streams, String) {
     auto s = open();
     ASSERT_TRUE(s->boolean());
-    auto str = s->string(s->i32());
+    auto str = s->string(s->i32(), 1);
     ASSERT_STREQ(str->c_str(), "date");
     delete str;
     delete s;
@@ -122,7 +122,7 @@ TEST(Streams, StringMapped) {
     int length = s->i32();
     auto map = s->jumpAndMap(length);
     ASSERT_EQ(9, s->getPosition());
-    auto str = map->string(length);
+    auto str = map->string(length, 1);
     ASSERT_TRUE(map->eof());
     delete map;
     ASSERT_FALSE(s->eof());

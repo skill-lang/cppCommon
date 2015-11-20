@@ -15,8 +15,11 @@ namespace skill {
  * verification and architectural compatibility to other implementations
  */
         template<class T, class B>
-        class StoragePool : public AbstractStoragePool{
+        class StoragePool : public AbstractStoragePool {
 
+        public:
+            StoragePool(TypeID typeID, AbstractStoragePool *superPool)
+                    : AbstractStoragePool(typeID, superPool) { }
         };
     }
 }

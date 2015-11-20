@@ -15,7 +15,7 @@ namespace parseTest {
 
     //!create a new pool in the target type system
     AbstractStoragePool *testPool(skill::TypeID typeID,
-                                  const std::string *name,
+                                  skill::api::String name,
                                   AbstractStoragePool *superPool,
                                   std::set<TypeRestriction> *restrictions) {
         return nullptr;
@@ -27,13 +27,14 @@ namespace parseTest {
                         StringPool *String,
                         AnnotationType *Annotation,
                         std::vector<AbstractStoragePool *> *types,
-                        std::map<std::string, AbstractStoragePool *> *typesByName,
+                        skill::api::typeByName_t *typesByName,
                         std::vector<MappedInStream *> &dataList) {
         return nullptr;
     }
 
     SkillFile *open(std::string path) {
-        return skill::internal::parseFile<testPool, testMake>(new FileInputStream(path), readOnly);
+        return skill::internal::parseFile<testPool, testMake>(
+                new FileInputStream(path), readOnly);
     }
 }
 using namespace parseTest;

@@ -27,8 +27,7 @@ namespace skill {
             uint64_t i64;
             float f32;
             double f64;
-            //! string; only legal, because strings are unique
-            String *string;
+            String string;
             //! T[] & T[i]
             Box *array;
             //! list<T>*

@@ -6,7 +6,9 @@
 #define SKILL_CPP_COMMON_SKILLEXCEPTION_H
 
 #include <string>
+#include <sstream>
 #include "../streams/InStream.h"
+#include "../streams/FileInputStream.h"
 
 namespace skill {
 
@@ -27,10 +29,20 @@ namespace skill {
         /**
          * creates a parse exception
          */
-        static SkillException ParseException(streams::InStream* stream, int blockCount, std::string msg, SkillException& cause){
+        static SkillException ParseException(streams::FileInputStream *stream, int blockCount, std::string msg) {
+            std::stringstream message;
+            message << "ParseException in file" << stream->getPath() << "\n Position" << stream->getPosition()
+            << "\n reason: " << msg << std::endl;
+            return SkillException(message.str());
+        }
 
+        static SkillException ParseException(streams::InStream *stream, int blockCount, std::string msg) {
+            std::stringstream message;
+            message << "ParseException in mapped stream.\n Position" << stream->getPosition() << "\n reason: "
+            << msg << std::endl;
+            return SkillException(message.str());
         }
     };
-    
+
 }
 #endif //SKILL_CPP_COMMON_SKILLEXCEPTION_H

@@ -7,10 +7,14 @@
 
 #include <set>
 #include <vector>
+#include <unordered_set>
+#include <mutex>
 
 #include "../api/StringAccess.h"
+#include "../streams/FileInputStream.h"
 
 namespace skill {
+    using namespace api;
     namespace internal {
 
         /**
@@ -18,10 +22,14 @@ namespace skill {
          *
          * @author Timm Felden
          */
-        class StringPool : public api::StringAccess {
+        class StringPool : public StringAccess {
+            std::mutex lock;
+
+            streams::FileInputStream *in;
+
             // note: this is public, because most internal stuff uses this
         public:
-            StringPool();
+            StringPool(streams::FileInputStream *in);
 
             /**
    * the set of known strings, including new strings
@@ -31,7 +39,7 @@ namespace skill {
    * Furthermore, we can unify type and field names, thus we do not have to have duplicate names laying around,
    * improving the performance of hash containers and name checks:)
    */
-            std::set<std::string> knownStrings;
+            std::unordered_set<String, equalityHash, equalityEquals> knownStrings;
 
             /**
              * ID ⇀ (absolute offset, length)
@@ -48,54 +56,50 @@ namespace skill {
              *
              * @todo replace by having
              */
-#if(0)
-            private[internal]
-                var idMap = ArrayBuffer[String](null)
-                /**
-                 * map used to write strings
-                 */
 
-            private
-                val serializationIDs = new HashMap[String, Int]
-                /**
-                 * returns the string, that should be used
-                 *
-                 * @note if result is null, nothing will happen and null will be returned
-                 */
-                def add(result : String) {
-                    if (result != null)
-                        knownStrings.add(result)
-                }
+            std::vector<String> idMap;
 
-                /**
-                 * search a string by id it had inside of the read file, may block if the string has not yet been read
-                 */
-                def get(index : SkillID) : String = {
-                        if (index <= 0) null
-                        else {
-                            var result = idMap(index)
-                            if (null == result) {
-                                this.synchronized
-                                {
-                                    // read result
-                                    val off = stringPositions(index.toInt)
-                                    in.push(off.absoluteOffset)
-                                    var chars = in.bytes(off.length)
-                                    in.pop
-                                    result = new String(chars, "UTF-8")
+            virtual String add(const char *target);
 
-                                    // ensure that the string is known
-                                    knownStrings.add(result)
+            /**
+             * search a string by id it had inside of the read file, may block if the string has not yet been read
+             */
+            String get(SKilLID index) {
+                if (index <= 0) return nullptr;
+                else {
+                    auto result = idMap[index];
+                    if (nullptr == result) {
+                        // this kind of synchronization is not correct in general and I should know better not to do,
+                        // stuff like that (but I did it anyway:) )
+                        lock.lock();
+                        {
+                            // read result
+                            auto off = stringPositions[index];
+                            long mark = in->getPosition();
+                            in->jump(off.first);
+                            result = in->string(off.second, index);
+                            in->jump(mark);
 
-                                    idMap(index.toInt) = result
-                                    result
-                                }
-                            } else
-                                result
+                            // unify result with known strings
+                            auto it = knownStrings.find(result);
+                            if (it == knownStrings.end())
+                                // a new string
+                                knownStrings.insert(result);
+                            else {
+                                // a string that exists already;
+                                // the string cannot be from the file, so set the id
+                                delete result;
+                                result = *it;
+                                const_cast<string_t *>(result)->id = index;
+                            }
+
+                            idMap[index] = result;
                         }
+                        lock.unlock();
+                    }
+                    return result;
                 }
-
-#endif
+            }
         };
     }
 }
