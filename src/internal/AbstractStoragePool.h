@@ -21,10 +21,18 @@ namespace skill {
  */
         class AbstractStoragePool : public fieldTypes::FieldType {
         protected:
-            AbstractStoragePool(TypeID typeID, AbstractStoragePool *superPool)
-                    : FieldType(typeID), superPool(superPool), basePool(superPool ? superPool->basePool : this) { }
+            AbstractStoragePool(TypeID typeID, AbstractStoragePool *superPool, api::String const name)
+                    : FieldType(typeID),
+                      name(name),
+                      superPool(superPool),
+                      basePool(superPool ? superPool->basePool : this) { }
 
         public:
+
+            /**
+             * the name of this pool
+             */
+            const api::String name;
 
             /**
              * offset into the type array

@@ -20,9 +20,10 @@ namespace skill {
          */
         class FieldType {
 
-        public:
+        protected:
             FieldType(const TypeID typeID) : typeID(typeID) { }
 
+        public:
             //! the id of this type
             const TypeID typeID;
         };

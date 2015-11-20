@@ -61,7 +61,7 @@ namespace skill {
              * skip a part of the file
              */
             void jump(long offset) {
-                position += offset;
+                position = (uint8_t *) base + offset;
             }
         };
     }

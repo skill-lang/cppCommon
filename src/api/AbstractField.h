@@ -7,10 +7,10 @@
 
 #include "String.h"
 #include "Box.h"
-
-typedef int FieldType;
+#include "../fieldTypes/FieldType.h"
 
 namespace skill {
+    using fieldTypes::FieldType;
     namespace api {
         /**
          * Public part of Skill field RTTI.

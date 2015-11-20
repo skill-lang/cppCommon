@@ -19,7 +19,7 @@ namespace skill {
 
         public:
             StoragePool(TypeID typeID, AbstractStoragePool *superPool)
-                    : AbstractStoragePool(typeID, superPool) { }
+                    : AbstractStoragePool(typeID, superPool, nullptr) { }
         };
     }
 }

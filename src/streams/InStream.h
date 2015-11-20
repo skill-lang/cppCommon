@@ -45,19 +45,19 @@ namespace skill {
              */
             virtual ~InStream() { };
 
-            inline uint8_t i8() {
+            inline int8_t i8() {
                 assert(position < end);
                 return *(position++);
             }
 
-            inline uint16_t i16() {
+            inline int16_t i16() {
                 assert(position + 1 < end);
                 register uint16_t r = *(position++) << 8;
                 r |= *(position++);
                 return r;
             }
 
-            inline uint32_t i32() {
+            inline int32_t i32() {
                 assert(position + 3 < end);
                 register uint32_t r = *(position++) << 24;
                 r |= *(position++) << 16;
@@ -66,7 +66,7 @@ namespace skill {
                 return r;
             }
 
-            inline uint64_t i64() {
+            inline int64_t i64() {
                 assert(position + 7 < end);
                 register uint64_t r = ((uint64_t) *(position++)) << 56;
                 r |= ((uint64_t) *(position++)) << 48;
@@ -79,7 +79,7 @@ namespace skill {
                 return r;
             }
 
-            inline uint64_t v64() {
+            inline int64_t v64() {
                 register uint64_t r, rval;
 
                 if (0 != ((rval = i8()) & 0x80)) {

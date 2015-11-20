@@ -10,6 +10,7 @@
 #include <map>
 #include <unordered_map>
 #include <string>
+#include <iostream>
 
 #include "../streams/FileInputStream.h"
 #include "AbstractStoragePool.h"
@@ -17,6 +18,8 @@
 #include "../common.h"
 #include "StringPool.h"
 #include "../api/SkillException.h"
+
+#define debugOnly if(1)
 
 //! TODO replace by actual implementation
 typedef int TypeRestriction;
@@ -119,9 +122,6 @@ namespace skill {
                 const int count;
             };
 
-            // ERROR DETECTION
-            int blockCounter = 0;
-
             // PARSE STATE
             StringPool *String = new StringPool(in);
             std::vector<AbstractStoragePool *> *types = new std::vector<AbstractStoragePool *>();
@@ -130,11 +130,20 @@ namespace skill {
             std::vector<MappedInStream *> dataList;
 
             // process stream
-            while (!in->eof()) {
+            debugOnly {
+                std::cout << std::endl << "file " << in->getPath() << std::endl;
+            }
+            for (int blockCounter = 0; !in->eof(); blockCounter++) {
+                debugOnly {
+                    std::cout << "block " << blockCounter << " starting at " << in->getPosition() << std::endl;
+                }
 
                 // string block
                 try {
                     const int count = (int) in->v64();
+                    debugOnly {
+                        std::cout << count << " strings" << std::endl;
+                    }
 
                     if (0 != count) {
                         int last = 0, offset = 0;
@@ -152,9 +161,13 @@ namespace skill {
                     throw SkillException::ParseException(in, blockCounter, "corrupted string block");
                 }
 
+                debugOnly {
+                    std::cout << "string block ended at " << in->getPosition() << std::endl;
+                }
+
                 // type block
                 try {
-                    auto typeCount = in->v64();
+                    TypeID typeCount = in->v64();
 
                     // this barrier is strictly increasing inside of each block and reset to 0 at the beginning of each block
                     TypeID blockIDBarrier = 0;
@@ -166,13 +179,18 @@ namespace skill {
                     std::vector<LFEntry> localFields;
 
                     // parse type definitions
-                    while (0 != typeCount--) {
+                    while (typeCount-- > 0) {
                         api::String name = String->get((SKilLID) in->v64());
 
                         // check null name
                         if (nullptr == name)
                             throw SkillException::ParseException(in, blockCounter,
                                                                  "Corrupted file, nullptr in typename");
+
+                        debugOnly {
+                            std::cout << "processing type " << *name << " at " << in->getPosition()
+                            << std::endl;
+                        }
 
                         // check duplicate types
                         if (seenTypes.find(name) != seenTypes.end())
@@ -221,7 +239,7 @@ namespace skill {
                             AbstractStoragePool *superPool;
                             if (0 == superID)
                                 superPool = nullptr;
-                            else if (superID > types->size()) {
+                            else if (superID > (TypeID) types->size()) {
                                 throw SkillException::ParseException(
                                         in, blockCounter,
                                         std::string("Type ").append(*name).append(
@@ -316,6 +334,11 @@ namespace skill {
                                     throw SkillException::ParseException(in, blockCounter,
                                                                          "A field has a nullptr as name.");
 
+                                debugOnly {
+                                    std::cout << "processing new field " << *p->name << "." << *fieldName
+                                    << " at " << in->getPosition() << std::endl;
+                                }
+
                                 const auto t = parseFieldType(in, types, String, Annotation, blockCounter);
 
                                 // parse field restrictions
@@ -371,6 +394,11 @@ namespace skill {
                         }
                     }
 
+                    debugOnly {
+                        std::cout << "reached end of type header at " << in->getPosition() << std::endl;
+                    }
+
+
                     // jump over data and continue in the next block
                     dataList.push_back(in->jumpAndMap(dataEnd));
                 } catch (SkillException e) {
@@ -378,8 +406,6 @@ namespace skill {
                 } catch (...) {
                     throw SkillException::ParseException(in, blockCounter, "unexpected foreign exception");
                 }
-
-                blockCounter++;
             }
 
             // note there still isn't a single instance
@@ -387,5 +413,7 @@ namespace skill {
         }
     }
 }
+
+#undef debugOnly
 
 #endif //SKILL_CPP_COMMON_FILEPARSER_H_H

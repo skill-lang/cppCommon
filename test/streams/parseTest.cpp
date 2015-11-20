@@ -6,6 +6,7 @@
 #include "../../src/streams/streams.h"
 #include "../../src/api/SkillException.h"
 #include "../../src/internal/FileParser.h"
+#include "../../src/internal/UnknownBasePool.h"
 
 using namespace skill::streams;
 
@@ -18,7 +19,7 @@ namespace parseTest {
                                   skill::api::String name,
                                   AbstractStoragePool *superPool,
                                   std::set<TypeRestriction> *restrictions) {
-        return nullptr;
+        return new UnknownBasePool(typeID, superPool, name);
     }
 
     //! create a new state in the target type system
@@ -41,6 +42,12 @@ using namespace parseTest;
 
 TEST(Parser, Empty) {
     auto s = open("emptyBlocks.sf");
+    ASSERT_TRUE(nullptr == s);
+    //delete s;
+}
+
+TEST(Parser, Date) {
+    auto s = open("date.sf");
     ASSERT_TRUE(nullptr == s);
     //delete s;
 }
