@@ -31,6 +31,8 @@ namespace skill {
         public:
             StringPool(streams::FileInputStream *in);
 
+            virtual ~StringPool();
+
             /**
    * the set of known strings, including new strings
    *

@@ -20,18 +20,19 @@ namespace skill {
         class UnknownBasePool : public BasePool<UnknownObject> {
 
         public:
-            UnknownBasePool(TypeID typeID, const api::string_t *name)
-                    : BasePool<UnknownObject>(typeID, name) { }
+            UnknownBasePool(TypeID typeID, String name, std::set<int> *rest)
+                    : BasePool<UnknownObject>(typeID, name, rest) { }
 
             virtual FieldDeclaration *addField(TypeID id, const FieldType *type,
                                                api::String name);
 
             virtual void allocateInstances() {
-                for (const auto& b : blocks) {
+                book = new Book<UnknownObject>(staticDataInstances);
+                for (const auto &b : blocks) {
                     SKilLID i = b.bpo + 1;
                     const auto last = i + b.staticCount;
-                    for(;i < last;i++)
-                        data[i] = new UnknownObject(i + 1, name);
+                    for (; i < last; i++)
+                        data[i] = new(book->next()) UnknownObject(i + 1, name);
                 }
             }
         };

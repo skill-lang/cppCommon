@@ -11,8 +11,15 @@
 namespace skill {
     using api::String;
     namespace internal {
+        template<class T>
+        class Book;
+
         class UnknownObject : public api::Object {
             const String _skillName;
+
+            //! bulk allocation constructor
+            UnknownObject() : _skillName(nullptr) { };
+            friend class Book<UnknownObject>;
 
         public:
             UnknownObject(SKilLID id) : Object(id), _skillName(nullptr) {

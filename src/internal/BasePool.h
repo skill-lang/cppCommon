@@ -18,8 +18,8 @@ namespace skill {
             }
 
         public:
-            BasePool(TypeID typeID, const api::string_t *name) :
-                    StoragePool<T, T>(typeID, nullptr, name) { }
+            BasePool(TypeID typeID, const api::string_t *name, std::set<int> *restrictions)
+                    : StoragePool<T, T>(typeID, nullptr, name, restrictions) { }
         };
     }
 }

@@ -12,13 +12,13 @@
 #include <string>
 #include <iostream>
 
-#include "../streams/FileInputStream.h"
-#include "AbstractStoragePool.h"
-#include "../api/SkillFile.h"
 #include "../common.h"
-#include "StringPool.h"
+#include "../api/SkillFile.h"
 #include "../api/SkillException.h"
 #include "../fieldTypes/BuiltinFieldType.h"
+#include "../streams/FileInputStream.h"
+#include "StringPool.h"
+#include "AbstractStoragePool.h"
 
 /**
  * set to 1, to enable debug output; this should be disabled on all commits

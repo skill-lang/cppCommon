@@ -25,3 +25,8 @@ String internal::StringPool::add(const char *target) {
         return result;
     }
 }
+
+internal::StringPool::~StringPool() {
+    for (auto s : knownStrings)
+        delete s;
+}

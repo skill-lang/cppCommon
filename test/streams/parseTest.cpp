@@ -6,6 +6,7 @@
 #include "../../src/streams/streams.h"
 #include "../../src/api/SkillException.h"
 #include "../../src/internal/FileParser.h"
+#include "../../src/internal/SkillState.h"
 #include "../../src/internal/UnknownBasePool.h"
 
 using namespace skill::streams;
@@ -19,7 +20,7 @@ namespace parseTest {
                                   skill::api::String name,
                                   AbstractStoragePool *superPool,
                                   std::set<TypeRestriction> *restrictions) {
-        return new UnknownBasePool(typeID, name);
+        return new UnknownBasePool(typeID, name, restrictions);
     }
 
     //! create a new state in the target type system
@@ -30,7 +31,11 @@ namespace parseTest {
                         std::vector<AbstractStoragePool *> *types,
                         skill::api::typeByName_t *typesByName,
                         std::vector<MappedInStream *> &dataList) {
-        return nullptr;
+        //! TODO read field data
+        for (auto map : dataList)
+            delete map;
+
+        return new SkillState(in, mode, String, Annotation, types, typesByName);
     }
 
     SkillFile *open(std::string path) {
@@ -42,24 +47,24 @@ using namespace parseTest;
 
 TEST(Parser, Empty) {
     auto s = open("emptyBlocks.sf");
-    ASSERT_TRUE(nullptr == s);
-    //delete s;
+    ASSERT_TRUE(s);
+    delete s;
 }
 
 TEST(Parser, Date) {
     auto s = open("date.sf");
-    ASSERT_TRUE(nullptr == s);
-    //delete s;
+    ASSERT_TRUE(s);
+    delete s;
 }
 
 TEST(Parser, Age) {
     auto s = open("age.sf");
-    ASSERT_TRUE(nullptr == s);
-    //delete s;
+    ASSERT_TRUE(s);
+    delete s;
 }
 
 TEST(Parser, Age16) {
     auto s = open("age16.sf");
-    ASSERT_TRUE(nullptr == s);
-    //delete s;
+    ASSERT_TRUE(s);
+    delete s;
 }

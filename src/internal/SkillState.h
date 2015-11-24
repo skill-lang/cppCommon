@@ -13,9 +13,16 @@ namespace skill {
         class SkillState : public api::SkillFile {
         public:
             //! TODO make private and remove test code!
-            SkillState(){
-
+            SkillState(streams::FileInputStream *in, api::WriteMode mode,
+                       StringPool *stringPool, int *annotation,
+                       std::vector<AbstractStoragePool *> *types,
+                       api::typeByName_t *typesByName)
+                    : SkillFile(in, mode, stringPool, types, typesByName) {
+                //! TODO no solution;)
+                delete annotation;
             }
+
+            virtual ~SkillState();
 
         };
     }

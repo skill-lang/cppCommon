@@ -7,8 +7,9 @@
 using namespace skill;
 
 skill::internal::AbstractStoragePool::AbstractStoragePool(TypeID typeID, AbstractStoragePool *superPool,
-                                                          api::String const name)
-        : FieldType(typeID),
+                                                          api::String const name,
+                                                          std::set<int> *restrictions)
+        : FieldType(typeID), restrictions(restrictions),
           name(name),
           superPool(superPool),
           basePool(superPool ? superPool->basePool : this) {
@@ -22,4 +23,11 @@ SKilLID skill::internal::AbstractStoragePool::newDynamicInstancesSize() const {
         r += sub->newDynamicInstancesSize();
 
     return r;
+}
+
+internal::AbstractStoragePool::~AbstractStoragePool() {
+    delete restrictions;
+
+    for(auto f : dataFields)
+        delete f;
 }

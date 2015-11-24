@@ -53,7 +53,9 @@ set(SOURCE_FILES
         src/internal/UnknownBasePool.h src/internal/LazyField.cpp
         src/internal/LazyField.h src/fieldTypes/BuiltinFieldType.cpp
         src/fieldTypes/BuiltinFieldType.h
-        src/internal/BasePool.cpp src/internal/BasePool.h src/internal/UnknownObject.cpp src/internal/UnknownObject.h)
+        src/internal/BasePool.cpp src/internal/BasePool.h
+        src/internal/UnknownObject.cpp src/internal/UnknownObject.h
+        src/internal/Book.h)
 add_executable(runTests ${SOURCE_FILES})
 
 # Link test executable against gtest & gtest_main

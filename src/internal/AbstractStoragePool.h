@@ -15,6 +15,9 @@
 #include "../fieldTypes/BuiltinFieldType.h"
 
 namespace skill {
+    namespace api {
+        class SkillFile;
+    }
     namespace internal {
 /**
  * this class reflects all storage pool properties, that do not depend on types
@@ -24,7 +27,12 @@ namespace skill {
         class AbstractStoragePool : public fieldTypes::FieldType {
         protected:
             AbstractStoragePool(TypeID typeID, AbstractStoragePool *superPool,
-                                api::String const name);
+                                api::String const name, std::set<int> *restrictions);
+
+            friend class api::SkillFile;
+
+            //! only skill files can delete pools
+            virtual ~AbstractStoragePool();
 
             virtual SKilLID newObjectsSize() const = 0;
 
@@ -60,7 +68,12 @@ namespace skill {
              * @note will parallelize over blocks and can be invoked in parallel
              */
             virtual void allocateInstances() = 0;
-            
+
+            /**
+             * restrictions of this pool
+             */
+            std::set<int> *const restrictions;
+
         public:
 
             /**

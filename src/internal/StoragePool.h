@@ -6,6 +6,7 @@
 #define SKILL_CPP_COMMON_STORAGEPOOL_H
 
 #include "AbstractStoragePool.h"
+#include "Book.h"
 
 namespace skill {
     namespace internal {
@@ -19,6 +20,12 @@ namespace skill {
 
         protected:
             /**
+             * allocated when all instances are allocated, because by then, we can now
+             * how many instances are to be read from file, which is quite helpful
+             */
+            Book<T> *book;
+
+            /**
              * @note the truth would be B*[], but this is not important now
              * @note the pointer is shifted by 1, so that access by id will get the right
              * result
@@ -26,11 +33,12 @@ namespace skill {
             T **data;
 
             virtual void allocateInstances() {
-                for (const auto& b : blocks) {
+                book = new Book<T>(staticDataInstances);
+                for (const auto &b : blocks) {
                     SKilLID i = b.bpo + 1;
                     const auto last = i + b.staticCount;
-                    for(;i < last;i++)
-                        data[i] = new T(i + 1);
+                    for (; i < last; i++)
+                        data[i] = new(book->next()) T(i + 1);
                 }
             }
 
@@ -45,8 +53,8 @@ namespace skill {
             }
 
             StoragePool(TypeID typeID, AbstractStoragePool *superPool,
-                        const api::string_t *name)
-                    : AbstractStoragePool(typeID, superPool, name) { }
+                        const api::string_t *name, std::set<int> *restrictions)
+                    : AbstractStoragePool(typeID, superPool, name, restrictions) { }
 
 
         public:

@@ -3,3 +3,7 @@
 //
 
 #include "SkillState.h"
+
+skill::internal::SkillState::~SkillState() {
+
+}

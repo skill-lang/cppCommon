@@ -23,6 +23,10 @@ namespace skill {
         protected:
             SKilLID id;
 
+            //! bulk allocation
+            Object() : id(0) { }
+
+            //! actual constructor
             Object(SKilLID id) : id(id) { }
 
             virtual ~Object() { }

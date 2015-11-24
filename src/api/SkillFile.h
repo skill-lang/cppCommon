@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include "String.h"
 #include "../internal/AbstractStoragePool.h"
+#include "../streams/FileInputStream.h"
 
 namespace skill {
     namespace api {
@@ -35,13 +36,33 @@ namespace skill {
          */
         class SkillFile {
         protected:
-            SkillFile();
+            internal::StringPool *const strings;
+
+            /**
+             * types managed by this file
+             */
+            const std::vector<internal::AbstractStoragePool *> *const types;
+
+            /**
+             * typename -> type mapping
+             */
+            const typeByName_t *const typesByName;
+
+            /**
+             * the file we read from
+             * @note null, iff no file was read
+             * @note owned by this
+             */
+            streams::FileInputStream *const fromFile;
+
+            SkillFile(streams::FileInputStream *string, WriteMode mode, internal::StringPool *pPool,
+                      std::vector<internal::AbstractStoragePool *> *pVector, typeByName_t *pMap);
 
         public:
             /**
              * Will release resources of this file, but will *NOT* write changes to disk!
              */
-            ~SkillFile();
+            virtual ~SkillFile();
 
             /**
              * Set a new path for the file. This will influence the next flush/close operation.
