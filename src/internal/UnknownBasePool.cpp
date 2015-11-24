@@ -8,7 +8,9 @@
 using namespace skill;
 using namespace internal;
 
-FieldDeclaration *UnknownBasePool::addField(TypeID id, FieldType *type,
+FieldDeclaration *UnknownBasePool::addField(TypeID id, const FieldType *type,
                                             api::String name) {
-    return new internal::LazyField(type, name);
+    auto rval = new internal::LazyField(type, name);
+    dataFields.push_back(rval);
+    return rval;
 }

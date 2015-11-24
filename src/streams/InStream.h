@@ -9,6 +9,7 @@
 #include <cassert>
 #include <cstdint>
 #include "../api/String.h"
+#include "../api/Box.h"
 
 namespace skill {
     namespace streams {
@@ -50,10 +51,22 @@ namespace skill {
                 return *(position++);
             }
 
+            static inline api::Box i8Box(InStream &self) {
+                register api::Box r;
+                r.i8 = self.i8();
+                return r;
+            }
+
             inline int16_t i16() {
                 assert(position + 1 < end);
                 register uint16_t r = *(position++) << 8;
                 r |= *(position++);
+                return r;
+            }
+
+            static inline api::Box i16Box(InStream &self) {
+                register api::Box r;
+                r.i16 = self.i16();
                 return r;
             }
 
@@ -63,6 +76,12 @@ namespace skill {
                 r |= *(position++) << 16;
                 r |= *(position++) << 8;
                 r |= *(position++);
+                return r;
+            }
+
+            static inline api::Box i32Box(InStream &self) {
+                register api::Box r;
+                r.i32 = self.i32();
                 return r;
             }
 
@@ -76,6 +95,12 @@ namespace skill {
                 r |= *(position++) << 16;
                 r |= *(position++) << 8;
                 r |= *(position++);
+                return r;
+            }
+
+            static inline api::Box i64Box(InStream &self) {
+                register api::Box r;
+                r.i64 = self.i64();
                 return r;
             }
 
@@ -116,6 +141,12 @@ namespace skill {
                 return rval;
             }
 
+            static inline api::Box v64Box(InStream &self) {
+                register api::Box r;
+                r.i64 = self.v64();
+                return r;
+            }
+
             inline float f32() {
                 register union {
                     uint32_t i;
@@ -123,6 +154,12 @@ namespace skill {
                 } result;
                 result.i = i32();
                 return result.f;
+            }
+
+            static inline api::Box f32Box(InStream &self) {
+                register api::Box r;
+                r.f32 = self.f32();
+                return r;
             }
 
             inline double f64() {
@@ -134,8 +171,21 @@ namespace skill {
                 return result.f;
             }
 
-            bool boolean() {
+            static inline api::Box f64Box(InStream &self) {
+                register api::Box r;
+                r.f64 = self.f64();
+                return r;
+            }
+
+
+            inline bool boolean() {
                 return *(position++) != 0;
+            }
+
+            static inline api::Box boolBox(InStream &self) {
+                register api::Box r;
+                r.boolean = self.boolean();
+                return r;
             }
 
             /**

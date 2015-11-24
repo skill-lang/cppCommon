@@ -21,10 +21,10 @@ namespace skill {
          */
         union Box {
             bool boolean;
-            uint8_t i8;
-            uint16_t i16;
-            uint32_t i32;
-            uint64_t i64;
+            int8_t i8;
+            int16_t i16;
+            int32_t i32;
+            int64_t i64;
             float f32;
             double f64;
             String string;

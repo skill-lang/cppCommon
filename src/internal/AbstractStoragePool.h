@@ -11,6 +11,7 @@
 #include "FileStructure.h"
 #include "FieldDeclaration.h"
 #include "../fieldTypes/FieldType.h"
+#include "../utils.h"
 
 namespace skill {
     namespace internal {
@@ -65,7 +66,19 @@ namespace skill {
             std::vector<FieldDeclaration *> dataFields;
 
             //!internal use only
-            virtual FieldDeclaration *addField(TypeID id, FieldType *type, api::String name) = 0;
+            virtual FieldDeclaration *addField(TypeID id, const FieldType *type, api::String name) = 0;
+
+            virtual api::Box read(streams::MappedInStream &in) const {
+                SK_TODO;
+            }
+
+            virtual uint64_t offset(api::Box &target) const {
+                SK_TODO;
+            }
+
+            virtual void write(outstream &out, api::Box &target) const {
+                SK_TODO;
+            }
         };
     }
 }

@@ -6,6 +6,10 @@
 #define SKILL_CPP_COMMON_FIELDTYPE_H
 
 #include "../common.h"
+#include "../streams/MappedInStream.h"
+#include "../api/Box.h"
+
+typedef int outstream;
 
 namespace skill {
     /**
@@ -26,6 +30,21 @@ namespace skill {
         public:
             //! the id of this type
             const TypeID typeID;
+
+            /**
+             * read a box from a stream using the correct read implementation
+             */
+            virtual api::Box read(streams::MappedInStream &in) const = 0;
+
+            /**
+             * calculate the offset of a single box
+             */
+            virtual uint64_t offset(api::Box &target) const = 0;
+
+            /**
+             * write a box to a stream
+             */
+            virtual void write(outstream &out, api::Box &target) const = 0;
         };
     }
 }

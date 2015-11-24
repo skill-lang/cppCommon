@@ -20,7 +20,7 @@ namespace skill {
             UnknownBasePool(TypeID typeID, AbstractStoragePool *superPool, const api::string_t *name)
                     : AbstractStoragePool(typeID, superPool, name) { }
 
-            virtual FieldDeclaration *addField(TypeID id, FieldType *type, api::String name);
+            virtual FieldDeclaration *addField(TypeID id, const FieldType *type, api::String name);
         };
     }
 }

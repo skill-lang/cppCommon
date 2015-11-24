@@ -51,3 +51,15 @@ TEST(Parser, Date) {
     ASSERT_TRUE(nullptr == s);
     //delete s;
 }
+
+TEST(Parser, Age) {
+    auto s = open("age.sf");
+    ASSERT_TRUE(nullptr == s);
+    //delete s;
+}
+
+TEST(Parser, Age16) {
+    auto s = open("age16.sf");
+    ASSERT_TRUE(nullptr == s);
+    //delete s;
+}

@@ -18,8 +18,12 @@
 #include "../common.h"
 #include "StringPool.h"
 #include "../api/SkillException.h"
+#include "../fieldTypes/BuiltinFieldType.h"
 
-#define debugOnly if(1)
+/**
+ * set to 1, to enable debug output; this should be disabled on all commits
+ */
+#define debugOnly if(0)
 
 //! TODO replace by actual implementation
 typedef int TypeRestriction;
@@ -34,55 +38,56 @@ namespace skill {
          * Turns a field type into a preliminary type information. In case of user types, the declaration
          * of the respective user type may follow after the field declaration.
          */
-        FieldType *parseFieldType(FileInputStream *in,
-                                  const std::vector<AbstractStoragePool *> *types,
-                                  StringPool *String,
-                                  AnnotationType *Annotation,
-                                  int blockCounter) {
+        const FieldType *parseFieldType(FileInputStream *in,
+                                        const std::vector<AbstractStoragePool *> *types,
+                                        StringPool *String,
+                                        AnnotationType *Annotation,
+                                        int blockCounter) {
             const TypeID i = (TypeID) in->v64();
-            switch (i) {/*
+            switch (i) {
                 case 0 :
-                    ConstantI8(in.i8)
+                    return new ConstantI8(in->i8());
                 case 1 :
-                    ConstantI16(in.i16)
+                    return new ConstantI16(in->i16());
                 case 2 :
-                    ConstantI32(in.i32)
+                    return new ConstantI32(in->i32());
                 case 3 :
-                    ConstantI64(in.i64)
+                    return new ConstantI64(in->i64());
                 case 4 :
-                    ConstantV64(in.v64)
-                case 5 :
-                    Annotation
+                    return new ConstantV64(in->v64());
+
+                    //case 5 :
+                    //  Annotation
                 case 6 :
-                    BoolType
+                    return &BoolType;
                 case 7 :
-                    I8
+                    return &I8;
                 case 8 :
-                    I16
+                    return &I16;
                 case 9 :
-                    I32
+                    return &I32;
                 case 10:
-                    I64
+                    return &I64;
                 case 11:
-                    V64
+                    return &V64;
                 case 12:
-                    F32
+                    return &F32;
                 case 13:
-                    F64
-                case 14:
-                    String
-                case 15:
-                    ConstantLengthArray(in.v64.toInt, parseFieldType(in, types, String, Annotation, blockCounter))
-                case 17:
-                    VariableLengthArray(parseFieldType(in, types, String, Annotation, blockCounter))
-                case 18:
-                    ListType(parseFieldType(in, types, String, Annotation, blockCounter))
-                case 19:
-                    SetType(parseFieldType(in, types, String, Annotation, blockCounter))
-                case 20:
-                    MapType(parseFieldType(in, types, String, Annotation, blockCounter),
-                            parseFieldType(in, types, String, Annotation, blockCounter))
-*/
+                    return &F64;
+                    //  case 14:
+                    //    String
+                    /*   case 15:
+                           ConstantLengthArray(in.v64.toInt, parseFieldType(in, types, String, Annotation, blockCounter))
+                       case 17:
+                           VariableLengthArray(parseFieldType(in, types, String, Annotation, blockCounter))
+                       case 18:
+                           ListType(parseFieldType(in, types, String, Annotation, blockCounter))
+                       case 19:
+                           SetType(parseFieldType(in, types, String, Annotation, blockCounter))
+                       case 20:
+                           MapType(parseFieldType(in, types, String, Annotation, blockCounter),
+                                   parseFieldType(in, types, String, Annotation, blockCounter))
+               */
                 default:
                     if (i >= 32 && i - 32 < (TypeID) types->size())
                         return types->at(i - 32);
