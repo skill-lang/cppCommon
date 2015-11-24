@@ -12,6 +12,7 @@
 #include "FieldDeclaration.h"
 #include "../fieldTypes/FieldType.h"
 #include "../utils.h"
+#include "../fieldTypes/BuiltinFieldType.h"
 
 namespace skill {
     namespace internal {
@@ -22,12 +23,44 @@ namespace skill {
  */
         class AbstractStoragePool : public fieldTypes::FieldType {
         protected:
-            AbstractStoragePool(TypeID typeID, AbstractStoragePool *superPool, api::String const name)
-                    : FieldType(typeID),
-                      name(name),
-                      superPool(superPool),
-                      basePool(superPool ? superPool->basePool : this) { }
+            AbstractStoragePool(TypeID typeID, AbstractStoragePool *superPool,
+                                api::String const name);
 
+            virtual SKilLID newObjectsSize() const = 0;
+
+            SKilLID newDynamicInstancesSize() const;
+
+            /**
+             * number of deleted instances currently stored in this pool
+             */
+            SKilLID deletedCount = 0;
+
+            /**
+             * Delete shall only be called from skill state
+             *
+             * @param target
+             *            the object to be deleted
+             * @note we type target using the erasure directly, because the Java type system is too weak to express correct
+             *       typing, when taking the pool from a map
+             */
+            inline void free(api::Object *target) {
+                // @note we do not need null check or 0 check, because both happen in SkillState
+                target->id = 0;
+                deletedCount++;
+            }
+
+            /**
+             * ensure that data is set correctly
+             */
+            virtual void allocateData() = 0;
+
+            /**
+             * ensure that instances are created correctly
+             *
+             * @note will parallelize over blocks and can be invoked in parallel
+             */
+            virtual void allocateInstances() = 0;
+            
         public:
 
             /**
@@ -52,11 +85,47 @@ namespace skill {
              */
             AbstractStoragePool *const basePool;
 
-            //! internal use only
-            SKilLID cachedSize = 0;
+            /**
+             * in fact Pool[? <: T,B]
+             */
+            std::vector<AbstractStoragePool *> subPools;
 
             //! internal use only
-            SKilLID staticDataInstnaces = 0;
+            SKilLID cachedSize = 0;
+            /**
+             * can be used to fix states, thereby making some operations (dynamic size) cacheable
+             *
+             * no instances can be added or deleted in a fixed state
+             */
+        private:
+            bool fixed = false;
+
+        public:
+
+            /**
+             * sets fixed for this pool; automatically adjusts sub/super pools
+             *
+             * @note takes deletedCount into account, thus the size may decrease by fixing
+             */
+            void fix(bool setFixed) {
+                // only do something if there is action required
+                if (setFixed != fixed) {
+                    fixed = setFixed;
+                    if (fixed) {
+                        SK_TODO;
+                        /*cachedSize = staticSize - deletedCount;
+                        for(auto s : subPools)
+                            s->fix(true);
+                            cachedSize += s->cachedSize;
+                        }*/
+                    } else if (superPool) {
+                        superPool->fix(false);
+                    }
+                }
+            }
+
+            //! internal use only
+            SKilLID staticDataInstances = 0;
 
             //! internal use only
             std::vector<Block> blocks;
@@ -73,7 +142,7 @@ namespace skill {
             }
 
             virtual uint64_t offset(api::Box &target) const {
-                SK_TODO;
+                return fieldTypes::V64.offset(target.annotation->id);
             }
 
             virtual void write(outstream &out, api::Box &target) const {

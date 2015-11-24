@@ -14,12 +14,46 @@ namespace skill {
  * @note maybe, we could omit B, but we will keep it, just for the sake of type level
  * verification and architectural compatibility to other implementations
  */
-        template<class T, class B>
+        template<typename T, typename B>
         class StoragePool : public AbstractStoragePool {
 
+        protected:
+            /**
+             * @note the truth would be B*[], but this is not important now
+             * @note the pointer is shifted by 1, so that access by id will get the right
+             * result
+             */
+            T **data;
+
+            virtual void allocateInstances() {
+                for (const auto& b : blocks) {
+                    SKilLID i = b.bpo + 1;
+                    const auto last = i + b.staticCount;
+                    for(;i < last;i++)
+                        data[i] = new T(i + 1);
+                }
+            }
+
+            /**
+             * All stored objects, which have exactly the type T. Objects are stored as arrays of field entries. The types of the
+             *  respective fields can be retrieved using the fieldTypes map.
+             */
+            std::vector<T *> newObjects;
+
+            virtual SKilLID newObjectsSize() const {
+                return (SKilLID) newObjects.size();
+            }
+
+            StoragePool(TypeID typeID, AbstractStoragePool *superPool,
+                        const api::string_t *name)
+                    : AbstractStoragePool(typeID, superPool, name) { }
+
+
         public:
-            StoragePool(TypeID typeID, AbstractStoragePool *superPool)
-                    : AbstractStoragePool(typeID, superPool, nullptr) { }
+
+            T *get(SKilLID id) const {
+                return id <= 0 ? nullptr : data[id];
+            }
         };
     }
 }

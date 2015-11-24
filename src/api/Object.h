@@ -8,6 +8,9 @@
 #include "String.h"
 
 namespace skill {
+    namespace internal {
+        class AbstractStoragePool;
+    }
     namespace api {
 
         /**
@@ -15,6 +18,8 @@ namespace skill {
          * every known and unknown skill type instance.
          */
         class Object {
+            friend class internal::AbstractStoragePool;
+
         protected:
             SKilLID id;
 
@@ -26,12 +31,12 @@ namespace skill {
             /**
              * return the skill name of the type of this object
              */
-            virtual String *skillName() = 0;
+            virtual String skillName() const = 0;
 
             /**
              * query, whether the object is marked for deletion and will be destroyed on flush
              */
-            bool isDeleted() { return 0 == id; }
+            bool isDeleted() const { return 0 == id; }
 
             //! TODO virtual get(f)
             //! TODO virtual set(f, v)

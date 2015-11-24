@@ -233,7 +233,7 @@ namespace skill {
                                     default:
                                         SkillException::ParseException(
                                                 in, blockCounter,
-                                                "Found an unknown field restriction. Please regenerate your binding, if possible.");
+                                                "Found an unknown type restriction. Please regenerate your binding, if possible.");
                                 }
 
                                 // TODO rest +=
@@ -286,7 +286,7 @@ namespace skill {
                         // static count and cached size are updated in the resize phase
                         // @note we assume that all dynamic instance are static instances as well, until we know for sure
                         definition->blocks.push_back(Block(blockCounter, lbpo, count, count));
-                        definition->staticDataInstnaces += count;
+                        definition->staticDataInstances += count;
 
                         resizeQueue.push_back(definition);
                         localFields.push_back(LFEntry(definition, in->v64()));
@@ -307,7 +307,7 @@ namespace skill {
                                 // if positive, then we have to subtract it from the assumed static count (local and global)
                                 if (delta > 0) {
                                     sb.staticCount -= delta;
-                                    parent->staticDataInstnaces -= delta;
+                                    parent->staticDataInstances -= delta;
                                 }
                             }
                         }
@@ -349,41 +349,88 @@ namespace skill {
                                 // parse field restrictions
                                 int fieldRestrictionCount = (int) in->v64();
                                 //! TODO
-                                /*
-                                const auto &rest = new HashSet[restrictions.FieldRestriction]
-                                rest.sizeHint(fieldRestrictionCount)
-                                while (fieldRestrictionCount != 0) {
-                                    fieldRestrictionCount -= 1
 
-                                    rest += ((in.v64.toInt : @switch) match {
-                                            case 0 ⇒ restrictions.NonNull.theNonNull
-                                            case 1 ⇒ restrictions.DefaultRestriction(t.read(in))
-                                            case 3 ⇒ t match {
-                                                case I8  ⇒ restrictions.Range(in.i8, in.i8)
-                                                case I16 ⇒ restrictions.Range(in.i16, in.i16)
-                                                case I32 ⇒ restrictions.Range(in.i32, in.i32)
-                                                case I64 ⇒ restrictions.Range(in.i64, in.i64)
-                                                case V64 ⇒ restrictions.Range(in.v64, in.v64)
-                                                case F32 ⇒ restrictions.Range(in.f32, in.f32)
-                                                case F64 ⇒ restrictions.Range(in.f64, in.f64)
-                                                case t   ⇒ throw new ParseException(in, blockCounter, s
-                                                "Type $t can not be range restricted!", null)
+                                //const auto &rest = new HashSet[restrictions.FieldRestriction]
+                                //rest.sizeHint(fieldRestrictionCount)
+                                for (; fieldRestrictionCount != 0; fieldRestrictionCount--) {
+                                    const int i = in->v64();
+                                    switch (i) {
+                                        case 0: // nonnull
+                                        case 1: // default
+                                            break;
+                                        case 3:
+                                            //range
+                                            switch (t->typeID) {
+                                                case 7:
+                                                    in->i8(), in->i8();
+                                                    break;
+                                                case 8:
+                                                    in->i16(), in->i16();
+                                                    break;
+                                                case 9:
+                                                    in->i32(), in->i32();
+                                                    break;
+                                                case 10:
+                                                    in->i64(), in->i64();
+                                                    break;
+                                                case 11:
+                                                    in->v64(), in->v64();
+                                                    break;
+                                                case 12:
+                                                    in->f32(), in->f32();
+                                                    break;
+                                                case 13:
+                                                    in->f64(), in->f64();
+                                                    break;
+                                                default:
+                                                    throw SkillException::ParseException(
+                                                            in, blockCounter,
+                                                            "Range restricton on a type that can not be restricted.");
                                             }
-                                            case 5 ⇒ restrictions.Coding(String.get(in.v64.toInt))
-                                            case 7 ⇒ restrictions.ConstantLengthPointer
-                                            case 9 ⇒ restrictions.OneOf((0 until in.v64.toInt).map(i ⇒
-                                            parseFieldType(in, types, String, Annotation, blockCounter) match {
-                                                case t :
-                                                    StoragePool[_, _] ⇒ t.getInstanceClass
-                                                case t ⇒ throw new ParseException(in, blockCounter,
-                                                                                  s
-                                                "Found a one of restrictions that tries to restrict to non user type $t.", null)
-                                            }).toArray
-                                            )
-                                            case i ⇒ throw new ParseException(in, blockCounter,
-                                            s"Found unknown field restriction $i. Please regenerate your binding, if possible.", null)
-                                    })
-                                }*/
+                                            break;
+                                        case 5: // coding
+                                            String->get(in->v64());
+                                            break;
+                                        case 7:
+                                            // constant length pointer
+                                            break;
+                                        case 9:
+                                            // oneof
+                                        default:
+                                            SkillException::ParseException(
+                                                    in, blockCounter,
+                                                    "Found an unknown field restriction. Please regenerate your binding, if possible.");
+                                    }
+                                }
+                                /* rest += ((in.v64.toInt : @switch) match {
+                                         case 0: restrictions.NonNull.theNonNull
+                                         case 1: restrictions.DefaultRestriction(t.read(in))
+                                         case 3: t match {
+                                             case I8 : restrictions.Range(in.i8, in.i8)
+                                             case I16: restrictions.Range(in.i16, in.i16)
+                                             case I32: restrictions.Range(in.i32, in.i32)
+                                             case I64: restrictions.Range(in.i64, in.i64)
+                                             case V64: restrictions.Range(in.v64, in.v64)
+                                             case F32: restrictions.Range(in.f32, in.f32)
+                                             case F64: restrictions.Range(in.f64, in.f64)
+                                             case t  : throw new ParseException(in, blockCounter, s
+                                             "Type $t can not be range restricted!", null)
+                                         }
+                                         case 5: restrictions.Coding(String.get(in.v64.toInt))
+                                         case 7: restrictions.ConstantLengthPointer
+                                         case 9: restrictions.OneOf((0 until in.v64.toInt).map(i:
+                                         parseFieldType(in, types, String, Annotation, blockCounter) match {
+                                             case t :
+                                                 StoragePool[_, _]: t.getInstanceClass
+                                             case t: throw new ParseException(in, blockCounter,
+                                                                               s
+                                             "Found a one of restrictions that tries to restrict to non user type $t.", null)
+                                         }).toArray
+                                         )
+                                         case i: throw new ParseException(in, blockCounter,
+                                         s"Found unknown field restriction $i. Please regenerate your binding, if possible.", null)
+                                 })
+                             }*/
                                 endOffset = in->v64();
 
                                 auto f = p->addField(id, t, fieldName/*, rest*/);

@@ -19,7 +19,7 @@ namespace parseTest {
                                   skill::api::String name,
                                   AbstractStoragePool *superPool,
                                   std::set<TypeRestriction> *restrictions) {
-        return new UnknownBasePool(typeID, superPool, name);
+        return new UnknownBasePool(typeID, name);
     }
 
     //! create a new state in the target type system
