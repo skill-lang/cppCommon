@@ -55,7 +55,9 @@ set(SOURCE_FILES
         src/fieldTypes/BuiltinFieldType.h
         src/internal/BasePool.cpp src/internal/BasePool.h
         src/internal/UnknownObject.cpp src/internal/UnknownObject.h
-        src/internal/Book.h)
+        src/internal/Book.h src/restrictions/TypeRestriction.cpp src/restrictions/TypeRestriction.h
+        src/restrictions/FieldRestriction.cpp src/restrictions/FieldRestriction.h
+        src/internal/SubPool.cpp src/internal/SubPool.h src/internal/UnknownSubPool.h)
 add_executable(runTests ${SOURCE_FILES})
 
 # Link test executable against gtest & gtest_main

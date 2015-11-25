@@ -7,15 +7,17 @@
 
 #include "AbstractStoragePool.h"
 #include "Book.h"
+#include "../restrictions/TypeRestriction.h"
 
 namespace skill {
+    using restrictions::TypeRestriction;
     namespace internal {
 /**
  * @author Timm Felden
  * @note maybe, we could omit B, but we will keep it, just for the sake of type level
  * verification and architectural compatibility to other implementations
  */
-        template<typename T, typename B>
+        template<class T, class B>
         class StoragePool : public AbstractStoragePool {
 
         protected:
@@ -24,13 +26,18 @@ namespace skill {
              * how many instances are to be read from file, which is quite helpful
              */
             Book<T> *book;
-
+            
+        public:
             /**
+             * @note internal use only!
+             *
              * @note the truth would be B*[], but this is not important now
              * @note the pointer is shifted by 1, so that access by id will get the right
              * result
              */
             T **data;
+
+        protected:
 
             virtual void allocateInstances() {
                 book = new Book<T>(staticDataInstances);
@@ -53,7 +60,7 @@ namespace skill {
             }
 
             StoragePool(TypeID typeID, AbstractStoragePool *superPool,
-                        const api::string_t *name, std::set<int> *restrictions)
+                        const api::string_t *name, std::set<TypeRestriction *> *restrictions)
                     : AbstractStoragePool(typeID, superPool, name, restrictions) { }
 
 

@@ -13,11 +13,13 @@
 #include "../fieldTypes/FieldType.h"
 #include "../utils.h"
 #include "../fieldTypes/BuiltinFieldType.h"
+#include "../restrictions/TypeRestriction.h"
 
 namespace skill {
     namespace api {
         class SkillFile;
     }
+    using restrictions::TypeRestriction;
     namespace internal {
 /**
  * this class reflects all storage pool properties, that do not depend on types
@@ -27,7 +29,7 @@ namespace skill {
         class AbstractStoragePool : public fieldTypes::FieldType {
         protected:
             AbstractStoragePool(TypeID typeID, AbstractStoragePool *superPool,
-                                api::String const name, std::set<int> *restrictions);
+                                api::String const name, std::set<TypeRestriction *> *restrictions);
 
             friend class api::SkillFile;
 
@@ -72,7 +74,7 @@ namespace skill {
             /**
              * restrictions of this pool
              */
-            std::set<int> *const restrictions;
+            std::set<TypeRestriction *> *const restrictions;
 
         public:
 
@@ -102,6 +104,13 @@ namespace skill {
              * in fact Pool[? <: T,B]
              */
             std::vector<AbstractStoragePool *> subPools;
+
+            /**
+             * create an anonymous subtype
+             */
+            virtual AbstractStoragePool *makeSubPool(skill::TypeID typeID,
+                                                     skill::api::String name,
+                                                     std::set<TypeRestriction *> *restrictions) = 0;
 
             //! internal use only
             SKilLID cachedSize = 0;

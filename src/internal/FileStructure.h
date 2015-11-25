@@ -23,7 +23,7 @@ namespace skill {
  *       written.
  */
         struct Block {
-            Block(SKilLID staticCount, int blockIndex, SKilLID bpo, SKilLID dynamicCount)
+            Block(int blockIndex, SKilLID bpo, SKilLID staticCount, SKilLID dynamicCount)
                     : blockIndex(blockIndex), bpo(bpo), staticCount(staticCount),
                       dynamicCount(dynamicCount) { }
 

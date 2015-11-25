@@ -19,6 +19,8 @@
 #include "../streams/FileInputStream.h"
 #include "StringPool.h"
 #include "AbstractStoragePool.h"
+#include "../restrictions/FieldRestriction.h"
+#include "../restrictions/TypeRestriction.h"
 
 /**
  * set to 1, to enable debug output; this should be disabled on all commits
@@ -26,12 +28,12 @@
 #define debugOnly if(0)
 
 //! TODO replace by actual implementation
-typedef int TypeRestriction;
 typedef int AnnotationType;
 
 namespace skill {
     using namespace streams;
     using namespace fieldTypes;
+    using namespace restrictions;
     namespace internal {
 
         /**
@@ -107,7 +109,7 @@ namespace skill {
                 AbstractStoragePool *newPool(TypeID typeID,
                                              String name,
                                              AbstractStoragePool *superPool,
-                                             std::set<TypeRestriction> *restrictions),
+                                             std::set<TypeRestriction *> *restrictions),
 
                 //! create a new state in the target type system
                 SkillFile *makeState(FileInputStream *in,
@@ -213,7 +215,7 @@ namespace skill {
 
                             // type restrictions
                             int restrictionCount = (int) in->v64();
-                            std::set<TypeRestriction> *rest = new std::set<TypeRestriction>;
+                            std::set<TypeRestriction *> *rest = new std::set<TypeRestriction *>;
                             //! TODO restrictions
                             // rest.sizeHint(restrictionCount)
                             while (restrictionCount-- > 0) {
@@ -279,8 +281,9 @@ namespace skill {
                         // ensure that bpo is in fact inside of the parents block
                         if (definition->superPool) {
                             const auto &b = definition->superPool->blocks.back();
-                            if (lbpo < b.bpo || b.bpo + b.dynamicCount < b.bpo)
-                                throw SkillException::ParseException(in, blockCounter, "Found broken bpo.");
+                            if (lbpo < b.bpo || b.bpo + b.dynamicCount < lbpo)
+                                throw SkillException::ParseException(in, blockCounter,
+                                                                     "Found broken bpo.");
                         }
 
                         // static count and cached size are updated in the resize phase

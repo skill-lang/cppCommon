@@ -3,12 +3,14 @@
 //
 
 #include "AbstractStoragePool.h"
+#include "../restrictions/TypeRestriction.h"
 
 using namespace skill;
+using restrictions::TypeRestriction;
 
 skill::internal::AbstractStoragePool::AbstractStoragePool(TypeID typeID, AbstractStoragePool *superPool,
                                                           api::String const name,
-                                                          std::set<int> *restrictions)
+                                                          std::set<TypeRestriction *> *restrictions)
         : FieldType(typeID), restrictions(restrictions),
           name(name),
           superPool(superPool),

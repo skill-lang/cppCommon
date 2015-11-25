@@ -9,8 +9,11 @@
 #include "StoragePool.h"
 #include "UnknownObject.h"
 #include "BasePool.h"
+#include "../restrictions/TypeRestriction.h"
+#include "UnknownSubPool.h"
 
 namespace skill {
+    using restrictions::TypeRestriction;
     namespace internal {
         /**
          * This class represents unknown base types
@@ -20,8 +23,15 @@ namespace skill {
         class UnknownBasePool : public BasePool<UnknownObject> {
 
         public:
-            UnknownBasePool(TypeID typeID, String name, std::set<int> *rest)
+            UnknownBasePool(TypeID typeID, String name, std::set<TypeRestriction *> *rest)
                     : BasePool<UnknownObject>(typeID, name, rest) { }
+
+            virtual AbstractStoragePool *makeSubPool(skill::TypeID typeID,
+                                                     skill::api::String name,
+                                                     std::set<TypeRestriction *> *restrictions) {
+                return new UnknownSubPool<UnknownObject, UnknownObject>(
+                        typeID, this, name, restrictions);
+            }
 
             virtual FieldDeclaration *addField(TypeID id, const FieldType *type,
                                                api::String name);

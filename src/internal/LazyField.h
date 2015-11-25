@@ -13,7 +13,8 @@ namespace skill {
         class LazyField : public FieldDeclaration {
 
         public:
-            LazyField(const FieldType *const type, const api::string_t *name) : FieldDeclaration(type, name) { }
+            LazyField(const FieldType *const type, const api::string_t *name)
+                    : FieldDeclaration(type, name) { }
 
             virtual api::Box getR(const api::Object *i);
 

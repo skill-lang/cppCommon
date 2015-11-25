@@ -14,13 +14,17 @@ using namespace skill::streams;
 namespace parseTest {
     using namespace skill::api;
     using namespace skill::internal;
+    using namespace skill::restrictions;
 
     //!create a new pool in the target type system
     AbstractStoragePool *testPool(skill::TypeID typeID,
                                   skill::api::String name,
                                   AbstractStoragePool *superPool,
-                                  std::set<TypeRestriction> *restrictions) {
-        return new UnknownBasePool(typeID, name, restrictions);
+                                  std::set<TypeRestriction *> *restrictions) {
+        if (nullptr == superPool)
+            return new UnknownBasePool(typeID, name, restrictions);
+        else
+            return superPool->makeSubPool(typeID, name, restrictions);
     }
 
     //! create a new state in the target type system
@@ -65,6 +69,12 @@ TEST(Parser, Age) {
 
 TEST(Parser, Age16) {
     auto s = open("age16.sf");
+    ASSERT_TRUE(s);
+    delete s;
+}
+
+TEST(Parser, LBPO) {
+    auto s = open("lbpo.sf");
     ASSERT_TRUE(s);
     delete s;
 }

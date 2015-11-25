@@ -6,8 +6,10 @@
 #define SKILL_CPP_COMMON_BASEPOOL_H
 
 #include "StoragePool.h"
+#include "../restrictions/TypeRestriction.h"
 
 namespace skill {
+    using restrictions::TypeRestriction;
     namespace internal {
         template<typename T>
         class BasePool : public StoragePool<T, T> {
@@ -18,7 +20,7 @@ namespace skill {
             }
 
         public:
-            BasePool(TypeID typeID, const api::string_t *name, std::set<int> *restrictions)
+            BasePool(TypeID typeID, const api::string_t *name, std::set<TypeRestriction *> *restrictions)
                     : StoragePool<T, T>(typeID, nullptr, name, restrictions) { }
         };
     }
