@@ -55,10 +55,7 @@ namespace skill {
 
             /**
              * get string by ID
-             *
-             * @todo replace by having
              */
-
             std::vector<String> idMap;
 
             virtual String add(const char *target);

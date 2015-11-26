@@ -19,6 +19,10 @@ namespace skill {
                 this->data = new T *[this->cachedSize] - 1;
             }
 
+            virtual ~BasePool() {
+                delete[] (1 + this->data);
+            }
+
         public:
             BasePool(TypeID typeID, const api::string_t *name, std::set<TypeRestriction *> *restrictions)
                     : StoragePool<T, T>(typeID, nullptr, name, restrictions) { }

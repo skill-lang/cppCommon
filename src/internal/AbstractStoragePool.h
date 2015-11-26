@@ -59,14 +59,18 @@ namespace skill {
                 deletedCount++;
             }
 
+        public:
             /**
              * ensure that data is set correctly
+             *
+             * @note internal use only!
              */
             virtual void allocateData() = 0;
 
             /**
              * ensure that instances are created correctly
              *
+             * @note internal use only!
              * @note will parallelize over blocks and can be invoked in parallel
              */
             virtual void allocateInstances() = 0;
@@ -75,8 +79,6 @@ namespace skill {
              * restrictions of this pool
              */
             std::set<TypeRestriction *> *const restrictions;
-
-        public:
 
             /**
              * the name of this pool

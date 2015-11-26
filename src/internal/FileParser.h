@@ -122,11 +122,11 @@ namespace skill {
         >
         SkillFile *parseFile(FileInputStream *in, WriteMode mode) {
             struct LFEntry {
-                LFEntry(AbstractStoragePool *const pool, int count)
+                LFEntry(AbstractStoragePool *const pool, SKilLID count)
                         : pool(pool), count(count) { }
 
                 AbstractStoragePool *const pool;
-                const int count;
+                const SKilLID count;
             };
 
             // PARSE STATE
@@ -174,7 +174,7 @@ namespace skill {
 
                 // type block
                 try {
-                    TypeID typeCount = in->v64();
+                    TypeID typeCount = (TypeID) in->v64();
 
                     // this barrier is strictly increasing inside of each block and reset to 0 at the beginning of each block
                     TypeID blockIDBarrier = 0;
@@ -292,7 +292,7 @@ namespace skill {
                         definition->staticDataInstances += count;
 
                         resizeQueue.push_back(definition);
-                        localFields.push_back(LFEntry(definition, in->v64()));
+                        localFields.push_back(LFEntry(definition, (SKilLID) in->v64()));
                     }
 
                     // resize pools, i.e. update cachedSize and staticCount
@@ -356,7 +356,7 @@ namespace skill {
                                 //const auto &rest = new HashSet[restrictions.FieldRestriction]
                                 //rest.sizeHint(fieldRestrictionCount)
                                 for (; fieldRestrictionCount != 0; fieldRestrictionCount--) {
-                                    const int i = in->v64();
+                                    const int i = (const int) in->v64();
                                     switch (i) {
                                         case 0: // nonnull
                                         case 1: // default
@@ -392,7 +392,7 @@ namespace skill {
                                             }
                                             break;
                                         case 5: // coding
-                                            String->get(in->v64());
+                                            String->get((SKilLID) in->v64());
                                             break;
                                         case 7:
                                             // constant length pointer

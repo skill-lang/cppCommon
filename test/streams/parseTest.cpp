@@ -39,6 +39,13 @@ namespace parseTest {
         for (auto map : dataList)
             delete map;
 
+        // trigger allocation and instance creation
+        for (auto t : *types) {
+            t->allocateData();
+            //if (nullptr==t->superPool)
+            //  StoragePool.setNextPools(t);
+        }
+
         return new SkillState(in, mode, String, Annotation, types, typesByName);
     }
 
