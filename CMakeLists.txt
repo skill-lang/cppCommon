@@ -17,8 +17,6 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 set(SOURCE_FILES
         src/utils.h
-        test/streams/parseTest.cpp
-        test/streams/streamTest.cpp
         src/streams/InStream.cpp
         src/streams/InStream.h
         src/streams/FileInputStream.cpp
@@ -58,8 +56,17 @@ set(SOURCE_FILES
         src/internal/Book.h src/restrictions/TypeRestriction.cpp src/restrictions/TypeRestriction.h
         src/restrictions/FieldRestriction.cpp src/restrictions/FieldRestriction.h
         src/internal/SubPool.cpp src/internal/SubPool.h src/internal/UnknownSubPool.h)
-add_executable(runTests ${SOURCE_FILES})
+
+
+set(TEST_FILES
+        test/streams/parseTest.cpp
+        test/streams/streamTest.cpp)
+
+add_executable(runTests ${SOURCE_FILES} ${TEST_FILES})
 
 # Link test executable against gtest & gtest_main
 target_link_libraries(runTests gtest gtest_main)
 add_test(runTests runTests)
+
+# The resulting library to be used by generated code
+ADD_LIBRARY(skill.cpp.common STATIC ${SOURCE_FILES})
