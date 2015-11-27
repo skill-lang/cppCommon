@@ -35,7 +35,7 @@ namespace skill {
             /**
              * return the skill name of the type of this object
              */
-            virtual String skillName() const = 0;
+            virtual const std::string* skillName() const = 0;
 
             /**
              * query, whether the object is marked for deletion and will be destroyed on flush

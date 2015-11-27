@@ -3,9 +3,9 @@
 //
 
 #include <gtest/gtest.h>
-#include "../../src/utils.h"
-#include "../../src/streams/streams.h"
-#include "../../src/api/SkillException.h"
+#include "../../skill/utils.h"
+#include "../../skill/streams/streams.h"
+#include "../../skill/api/SkillException.h"
 
 using namespace skill::streams;
 

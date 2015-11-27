@@ -3,11 +3,11 @@
 //
 
 #include <gtest/gtest.h>
-#include "../../src/streams/streams.h"
-#include "../../src/api/SkillException.h"
-#include "../../src/internal/FileParser.h"
-#include "../../src/internal/SkillState.h"
-#include "../../src/internal/UnknownBasePool.h"
+#include "../../skill/streams/streams.h"
+#include "../../skill/api/SkillException.h"
+#include "../../skill/internal/FileParser.h"
+#include "../../skill/internal/SkillState.h"
+#include "../../skill/internal/UnknownBasePool.h"
 
 using namespace skill::streams;
 
@@ -63,9 +63,13 @@ TEST(Parser, Empty) {
 }
 
 TEST(Parser, Date) {
-    auto s = open("date.sf");
-    ASSERT_TRUE(s);
-    delete s;
+    try {
+        auto s = open("date.sf");
+        delete s;
+    } catch (skill::SkillException e) {
+        GTEST_FAIL() << "an exception was thrown:" << std::endl << e.message;
+    }
+    GTEST_SUCCEED();
 }
 
 TEST(Parser, Age) {
