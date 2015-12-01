@@ -107,7 +107,7 @@ namespace skill {
                 return r;
             }
 
-            virtual uint64_t offset(api::Box &target) const {
+            virtual uint64_t offset(const api::Box &target) const {
                 return fieldTypes::V64FieldType::offset(target.string->id);
             }
 

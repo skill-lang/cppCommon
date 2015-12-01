@@ -44,7 +44,7 @@ namespace skill {
                 return r;
             }
 
-            virtual uint64_t offset(api::Box &target) const {
+            virtual uint64_t offset(const api::Box &target) const {
                 if (target.annotation) {
                     String s = string->add(target.annotation->skillName());
                     return V64FieldType::offset(typesByName->at(s)->typeID)

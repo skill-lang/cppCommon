@@ -74,18 +74,20 @@ namespace skill {
                     return &F64;
                 case 14:
                     return String;
-                    /*   case 15:
-                           ConstantLengthArray(in.v64.toInt, parseFieldType(in, types, String, Annotation, blockCounter))
-                       case 17:
-                           VariableLengthArray(parseFieldType(in, types, String, Annotation, blockCounter))
-                       case 18:
-                           ListType(parseFieldType(in, types, String, Annotation, blockCounter))
-                       case 19:
-                           SetType(parseFieldType(in, types, String, Annotation, blockCounter))
-                       case 20:
-                           MapType(parseFieldType(in, types, String, Annotation, blockCounter),
-                                   parseFieldType(in, types, String, Annotation, blockCounter))
-               */
+                case 15:
+                    return new ConstantLengthArray(
+                            in->v64(),
+                            parseFieldType(in, types, String, Annotation, blockCounter));
+                case 17:
+                    return new VariableLengthArray(parseFieldType(in, types, String, Annotation, blockCounter));
+                case 18:
+                    return new ListType(parseFieldType(in, types, String, Annotation, blockCounter));
+                case 19:
+                    return new SetType(parseFieldType(in, types, String, Annotation, blockCounter));
+                case 20:
+                    return new MapType(parseFieldType(in, types, String, Annotation, blockCounter),
+                                       parseFieldType(in, types, String, Annotation, blockCounter));
+
                 default:
                     if (i >= 32 && i - 32 < (TypeID) types->size())
                         return types->at(i - 32);

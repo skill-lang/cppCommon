@@ -39,7 +39,7 @@ namespace skill {
             /**
              * calculate the offset of a single box
              */
-            virtual uint64_t offset(api::Box &target) const = 0;
+            virtual uint64_t offset(const api::Box &target) const = 0;
 
             /**
              * write a box to a stream
