@@ -5,30 +5,27 @@
 #ifndef SKILL_CPP_COMMON_FILEPARSER_H_H
 #define SKILL_CPP_COMMON_FILEPARSER_H_H
 
-#include <set>
-#include <vector>
-#include <map>
-#include <unordered_map>
-#include <string>
-#include <iostream>
-
 #include "../common.h"
 #include "../api/SkillFile.h"
-#include "../api/SkillException.h"
+#include "ParseException.h"
 #include "../fieldTypes/BuiltinFieldType.h"
+#include "../fieldTypes/AnnotationType.h"
 #include "../streams/FileInputStream.h"
 #include "StringPool.h"
 #include "AbstractStoragePool.h"
 #include "../restrictions/FieldRestriction.h"
 #include "../restrictions/TypeRestriction.h"
 
+#include <vector>
+#include <unordered_map>
+#include <string>
+#include <iostream>
+#include <cassert>
+
 /**
  * set to 1, to enable debug output; this should be disabled on all commits
  */
 #define debugOnly if(0)
-
-//! TODO replace by actual implementation
-typedef int AnnotationType;
 
 namespace skill {
     using namespace streams;
@@ -40,11 +37,11 @@ namespace skill {
          * Turns a field type into a preliminary type information. In case of user types, the declaration
          * of the respective user type may follow after the field declaration.
          */
-        const FieldType *parseFieldType(FileInputStream *in,
-                                        const std::vector<AbstractStoragePool *> *types,
-                                        StringPool *String,
-                                        AnnotationType *Annotation,
-                                        int blockCounter) {
+        inline const FieldType *parseFieldType(FileInputStream *in,
+                                               const std::vector<AbstractStoragePool *> *types,
+                                               StringPool *String,
+                                               AnnotationType *Annotation,
+                                               int blockCounter) {
             const TypeID i = (TypeID) in->v64();
             switch (i) {
                 case 0 :
@@ -57,9 +54,8 @@ namespace skill {
                     return new ConstantI64(in->i64());
                 case 4 :
                     return new ConstantV64(in->v64());
-
-                    //case 5 :
-                    //  Annotation
+                case 5 :
+                    return Annotation;
                 case 6 :
                     return &BoolType;
                 case 7 :
@@ -76,8 +72,8 @@ namespace skill {
                     return &F32;
                 case 13:
                     return &F64;
-                    //  case 14:
-                    //    String
+                case 14:
+                    return String;
                     /*   case 15:
                            ConstantLengthArray(in.v64.toInt, parseFieldType(in, types, String, Annotation, blockCounter))
                        case 17:
@@ -94,8 +90,8 @@ namespace skill {
                     if (i >= 32 && i - 32 < (TypeID) types->size())
                         return types->at(i - 32);
                     else
-                        throw SkillException::ParseException(in, blockCounter,
-                                                             "Invalid type ID");
+                        throw ParseException(in, blockCounter,
+                                             "Invalid type ID");
             }
 
         }
@@ -130,10 +126,10 @@ namespace skill {
             };
 
             // PARSE STATE
-            StringPool *String = new StringPool(in);
-            std::vector<AbstractStoragePool *> *types = new std::vector<AbstractStoragePool *>();
-            api::typeByName_t *typesByName = new api::typeByName_t;
-            AnnotationType *Annotation = new AnnotationType;
+            StringPool *const String = new StringPool(in);
+            std::vector<AbstractStoragePool *> *const types = new std::vector<AbstractStoragePool *>();
+            api::typeByName_t *const typesByName = new api::typeByName_t;
+            AnnotationType *const Annotation = new AnnotationType(types, typesByName, String);
             std::vector<MappedInStream *> dataList;
 
             // process stream
@@ -165,7 +161,7 @@ namespace skill {
                     }
 
                 } catch (SkillException e) {
-                    throw SkillException::ParseException(in, blockCounter, "corrupted string block");
+                    throw ParseException(in, blockCounter, "corrupted string block");
                 }
 
                 debugOnly {
@@ -191,8 +187,8 @@ namespace skill {
 
                         // check null name
                         if (nullptr == name)
-                            throw SkillException::ParseException(in, blockCounter,
-                                                                 "Corrupted file, nullptr in typename");
+                            throw ParseException(in, blockCounter,
+                                                 "Corrupted file, nullptr in typename");
 
                         debugOnly {
                             std::cout << "processing type " << *name << " at " << in->getPosition()
@@ -201,7 +197,7 @@ namespace skill {
 
                         // check duplicate types
                         if (seenTypes.find(name) != seenTypes.end())
-                            throw SkillException::ParseException(
+                            throw ParseException(
                                     in, blockCounter,
                                     std::string("Duplicate definition of type ").append(*name));
 
@@ -233,7 +229,7 @@ namespace skill {
                                         break;
 
                                     default:
-                                        SkillException::ParseException(
+                                        ParseException(
                                                 in, blockCounter,
                                                 "Found an unknown type restriction. Please regenerate your binding, if possible.");
                                 }
@@ -247,7 +243,7 @@ namespace skill {
                             if (0 == superID)
                                 superPool = nullptr;
                             else if (superID > (TypeID) types->size()) {
-                                throw SkillException::ParseException(
+                                throw ParseException(
                                         in, blockCounter,
                                         std::string("Type ").append(*name).append(
                                                 " refers to an ill-formed super type."));
@@ -269,7 +265,7 @@ namespace skill {
                         if (blockIDBarrier < definition->typeID)
                             blockIDBarrier = definition->typeID;
                         else
-                            throw SkillException::ParseException(in, blockCounter, "Found unordered type block.");
+                            throw ParseException(in, blockCounter, "Found unordered type block.");
 
                         // in contrast to prior implementation, bpo is the position inside of data, even if there are no actual
                         // instances. We need this behavior, because that way we can cheaply calculate the number of static instances
@@ -282,8 +278,8 @@ namespace skill {
                         if (definition->superPool) {
                             const auto &b = definition->superPool->blocks.back();
                             if (lbpo < b.bpo || b.bpo + b.dynamicCount < lbpo)
-                                throw SkillException::ParseException(in, blockCounter,
-                                                                     "Found broken bpo.");
+                                throw ParseException(in, blockCounter,
+                                                     "Found broken bpo.");
                         }
 
                         // static count and cached size are updated in the resize phase
@@ -330,8 +326,8 @@ namespace skill {
                         while (localFieldCount-- > 0) {
                             const TypeID id = (TypeID) in->v64();
                             if (id <= 0 || legalFieldIDBarrier < id)
-                                throw SkillException::ParseException(in, blockCounter,
-                                                                     "Found an illegal field ID.");
+                                throw ParseException(in, blockCounter,
+                                                     "Found an illegal field ID.");
 
                             long endOffset = 0;
                             if (id == legalFieldIDBarrier) {
@@ -339,8 +335,8 @@ namespace skill {
                                 legalFieldIDBarrier++;
                                 const api::String fieldName = String->get((SKilLID) in->v64());
                                 if (!fieldName)
-                                    throw SkillException::ParseException(in, blockCounter,
-                                                                         "A field has a nullptr as name.");
+                                    throw ParseException(in, blockCounter,
+                                                         "A field has a nullptr as name.");
 
                                 debugOnly {
                                     std::cout << "processing new field " << *p->name << "." << *fieldName
@@ -386,7 +382,7 @@ namespace skill {
                                                     in->f64(), in->f64();
                                                     break;
                                                 default:
-                                                    throw SkillException::ParseException(
+                                                    throw ParseException(
                                                             in, blockCounter,
                                                             "Range restricton on a type that can not be restricted.");
                                             }
@@ -400,7 +396,7 @@ namespace skill {
                                         case 9:
                                             // oneof
                                         default:
-                                            SkillException::ParseException(
+                                            ParseException(
                                                     in, blockCounter,
                                                     "Found an unknown field restriction. Please regenerate your binding, if possible.");
                                     }
@@ -459,7 +455,7 @@ namespace skill {
                 } catch (SkillException e) {
                     throw e;
                 } catch (...) {
-                    throw SkillException::ParseException(in, blockCounter, "unexpected foreign exception");
+                    throw ParseException(in, blockCounter, "unexpected foreign exception");
                 }
             }
 

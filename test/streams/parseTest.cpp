@@ -4,21 +4,22 @@
 
 #include <gtest/gtest.h>
 #include "../../skill/streams/streams.h"
-#include "../../skill/api/SkillException.h"
 #include "../../skill/internal/FileParser.h"
 #include "../../skill/internal/SkillState.h"
 #include "../../skill/internal/UnknownBasePool.h"
+#include "../../skill/fieldTypes/AnnotationType.h"
 
 using namespace skill::streams;
 
 namespace parseTest {
+    using namespace skill;
     using namespace skill::api;
     using namespace skill::internal;
     using namespace skill::restrictions;
 
     //!create a new pool in the target type system
-    AbstractStoragePool *testPool(skill::TypeID typeID,
-                                  skill::api::String name,
+    AbstractStoragePool *testPool(TypeID typeID,
+                                  String name,
                                   AbstractStoragePool *superPool,
                                   std::set<TypeRestriction *> *restrictions) {
         if (nullptr == superPool)
@@ -31,9 +32,9 @@ namespace parseTest {
     SkillFile *testMake(FileInputStream *in,
                         WriteMode mode,
                         StringPool *String,
-                        AnnotationType *Annotation,
+                        fieldTypes::AnnotationType *Annotation,
                         std::vector<AbstractStoragePool *> *types,
-                        skill::api::typeByName_t *typesByName,
+                        typeByName_t *typesByName,
                         std::vector<MappedInStream *> &dataList) {
         //! TODO read field data
         for (auto map : dataList)

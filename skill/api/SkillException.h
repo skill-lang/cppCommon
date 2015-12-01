@@ -7,8 +7,6 @@
 
 #include <string>
 #include <sstream>
-#include "../streams/InStream.h"
-#include "../streams/FileInputStream.h"
 
 namespace skill {
 
@@ -25,23 +23,6 @@ namespace skill {
         const std::string message;
 
         SkillException(std::string message);
-
-        /**
-         * creates a parse exception
-         */
-        static SkillException ParseException(streams::FileInputStream *stream, int blockCount, std::string msg) {
-            std::stringstream message;
-            message << "ParseException in file" << stream->getPath() << "\n Position" << stream->getPosition()
-            << "\n reason: " << msg << std::endl;
-            return SkillException(message.str());
-        }
-
-        static SkillException ParseException(streams::InStream *stream, int blockCount, std::string msg) {
-            std::stringstream message;
-            message << "ParseException in mapped stream.\n Position" << stream->getPosition() << "\n reason: "
-            << msg << std::endl;
-            return SkillException(message.str());
-        }
     };
 
 }

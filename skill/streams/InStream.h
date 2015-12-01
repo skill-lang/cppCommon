@@ -6,10 +6,10 @@
 #define SKILL_CPP_COMMON_INSTREAM_H
 
 #include <string>
-#include <cassert>
 #include <cstdint>
 #include "../api/String.h"
 #include "../api/Box.h"
+#include "../api/SkillException.h"
 
 namespace skill {
     namespace streams {
@@ -22,6 +22,11 @@ namespace skill {
         * @author Timm Felden
         */
         class InStream {
+            static inline void ensure(const bool condition) {
+                if (!condition)
+                    throw SkillException("unexpected end of stream");
+            }
+
         protected:
 
             /**
@@ -44,10 +49,10 @@ namespace skill {
             /**
              * Proper destruction happens in child destructors
              */
-            virtual ~InStream() { };
+            virtual ~InStream() { }
 
             inline int8_t i8() {
-                assert(position < end);
+                ensure(position < end);
                 return *(position++);
             }
 
@@ -58,7 +63,7 @@ namespace skill {
             }
 
             inline int16_t i16() {
-                assert(position + 1 < end);
+                ensure(position + 1 < end);
                 register uint16_t r = *(position++) << 8;
                 r |= *(position++);
                 return r;
@@ -71,7 +76,7 @@ namespace skill {
             }
 
             inline int32_t i32() {
-                assert(position + 3 < end);
+                ensure(position + 3 < end);
                 register uint32_t r = *(position++) << 24;
                 r |= *(position++) << 16;
                 r |= *(position++) << 8;
@@ -86,7 +91,7 @@ namespace skill {
             }
 
             inline int64_t i64() {
-                assert(position + 7 < end);
+                ensure(position + 7 < end);
                 register uint64_t r = ((uint64_t) *(position++)) << 56;
                 r |= ((uint64_t) *(position++)) << 48;
                 r |= ((uint64_t) *(position++)) << 40;
@@ -193,8 +198,8 @@ namespace skill {
              * @note the caller owns the string!
              */
             String string(int length, SKilLID id) {
-                assert(position + length <= end);
-                assert(id > 0);
+                ensure(position + length <= end);
+                ensure(id > 0);
                 String rval = new api::string_t((const char *) position, length, id);
                 position = position + length;
                 return rval;
