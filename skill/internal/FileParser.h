@@ -119,7 +119,7 @@ namespace skill {
                                      api::typeByName_t *typesByName,
                                      std::vector<std::unique_ptr<MappedInStream>> &dataList)
         >
-        SkillFile *parseFile(FileInputStream *in, WriteMode mode) {
+        SkillFile *parseFile(std::unique_ptr<FileInputStream> in, WriteMode mode) {
             struct LFEntry {
                 LFEntry(AbstractStoragePool *const pool, SKilLID count)
                         : pool(pool), count(count) { }
@@ -129,7 +129,7 @@ namespace skill {
             };
 
             // PARSE STATE
-            std::unique_ptr<StringPool> String(new StringPool(in));
+            std::unique_ptr<StringPool> String(new StringPool(in.get()));
             std::unique_ptr<std::vector<std::unique_ptr<AbstractStoragePool>>> types(
                     new std::vector<std::unique_ptr<AbstractStoragePool>>());
             std::unique_ptr<api::typeByName_t> typesByName(new api::typeByName_t);
@@ -347,7 +347,7 @@ namespace skill {
                                     << " at " << in->getPosition() << std::endl;
                                 }
 
-                                const auto t = parseFieldType(in, types.get(), String.get(), Annotation.get(),
+                                const auto t = parseFieldType(in.get(), types.get(), String.get(), Annotation.get(),
                                                               blockCounter);
 
                                 // parse field restrictions
@@ -465,7 +465,8 @@ namespace skill {
             }
 
             // note there still isn't a single instance
-            return makeState(in, mode, String.release(), Annotation.release(), types.release(), typesByName.release(), dataList);
+            return makeState(in.release(), mode, String.release(), Annotation.release(), types.release(), typesByName.release(),
+                             dataList);
         }
     }
 }

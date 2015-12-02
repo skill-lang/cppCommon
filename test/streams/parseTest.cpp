@@ -39,7 +39,7 @@ namespace parseTest {
         //! TODO read field data
 
         // trigger allocation and instance creation
-        for (auto& t : *types) {
+        for (auto &t : *types) {
             t.get()->allocateData();
             //if (nullptr==t->superPool)
             //  StoragePool.setNextPools(t);
@@ -50,7 +50,7 @@ namespace parseTest {
 
     SkillFile *open(std::string path) {
         return skill::internal::parseFile<testPool, testMake>(
-                new FileInputStream(path), readOnly);
+                std::unique_ptr<FileInputStream>(new FileInputStream(path)), readOnly);
     }
 }
 using namespace parseTest;
