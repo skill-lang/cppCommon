@@ -33,16 +33,14 @@ namespace parseTest {
                         WriteMode mode,
                         StringPool *String,
                         fieldTypes::AnnotationType *Annotation,
-                        std::vector<AbstractStoragePool *> *types,
+                        std::vector<std::unique_ptr<AbstractStoragePool>> *types,
                         typeByName_t *typesByName,
-                        std::vector<MappedInStream *> &dataList) {
+                        std::vector<std::unique_ptr<MappedInStream>> &dataList) {
         //! TODO read field data
-        for (auto map : dataList)
-            delete map;
 
         // trigger allocation and instance creation
-        for (auto t : *types) {
-            t->allocateData();
+        for (auto& t : *types) {
+            t.get()->allocateData();
             //if (nullptr==t->superPool)
             //  StoragePool.setNextPools(t);
         }

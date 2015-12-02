@@ -24,6 +24,10 @@ namespace skill {
 
         template<typename T, TypeID id>
         class ConstantFieldType : public BuiltinFieldType<T, id> {
+        public:
+            virtual bool requiresDestruction() const {
+                return true;
+            }
 
         protected:
             ConstantFieldType(T value) : BuiltinFieldType<T, id>(), value(value) { }
@@ -111,6 +115,10 @@ namespace skill {
             virtual api::Box read(streams::MappedInStream &in) const {
                 return Read(in);
             }
+
+            virtual bool requiresDestruction() const {
+                return false;
+            }
         };
 
         /**
@@ -189,6 +197,15 @@ namespace skill {
 
             SingleBaseTypeContainer(const FieldType *const base) : base(base) { }
 
+            virtual ~SingleBaseTypeContainer() {
+                if (base->requiresDestruction())
+                    delete base;
+            }
+
+            virtual bool requiresDestruction() const {
+                return true;
+            }
+
         };
 
         struct ConstantLengthArray : public SingleBaseTypeContainer<api::Box *, 15> {
@@ -196,7 +213,6 @@ namespace skill {
 
             ConstantLengthArray(int64_t length, const FieldType *const base)
                     : SingleBaseTypeContainer<api::Box *, 15>(base), length((size_t) length) { }
-
 
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;
@@ -303,6 +319,13 @@ namespace skill {
             MapType(const FieldType *const key, const FieldType *const value)
                     : key(key), value(value) { }
 
+            virtual ~MapType() {
+                if (key->requiresDestruction())
+                    delete key;
+                if (value->requiresDestruction())
+                    delete value;
+            }
+
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;
                 size_t length = (size_t) in.v64();
@@ -313,7 +336,7 @@ namespace skill {
             }
 
             virtual uint64_t offset(const api::Box &target) const {
-                uint64_t rval = V64FieldType::offset((int64_t)target.map->size());
+                uint64_t rval = V64FieldType::offset((int64_t) target.map->size());
                 for (auto b : *target.map) {
                     rval += key->offset(b.first);
                     rval += value->offset(b.second);
@@ -323,6 +346,10 @@ namespace skill {
 
             virtual void write(outstream &out, api::Box &target) const {
                 SK_TODO;
+            }
+
+            virtual bool requiresDestruction() const {
+                return true;
             }
         };
 

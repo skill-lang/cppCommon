@@ -9,6 +9,7 @@
 #include "BuiltinFieldType.h"
 #include "../api/SkillFile.h"
 #include "../internal/StringPool.h"
+#include <memory>
 
 namespace skill {
     using streams::InStream;
@@ -23,14 +24,14 @@ namespace skill {
          * will then be unique and we no longer have to care for identical copies
          */
         class AnnotationType : public BuiltinFieldType<api::Object *, 5> {
-            std::vector<internal::AbstractStoragePool *> *const types;
+            std::vector<std::unique_ptr<internal::AbstractStoragePool>> *const types;
             api::typeByName_t *const typesByName;
             internal::StringPool *const string;
 
         public:
-            AnnotationType(std::vector<internal::AbstractStoragePool *> *const types,
-                           api::typeByName_t *const typesByName,
-                           internal::StringPool *const string)
+            AnnotationType(std::vector<std::unique_ptr<internal::AbstractStoragePool>> *types,
+                           api::typeByName_t *typesByName,
+                           internal::StringPool *string)
                     : types(types), typesByName(typesByName), string(string) { }
 
             virtual ~AnnotationType() { }
@@ -55,6 +56,10 @@ namespace skill {
 
             virtual void write(outstream &out, api::Box &target) const {
                 SK_TODO;
+            }
+
+            virtual bool requiresDestruction() const {
+                return false;
             }
         };
 
