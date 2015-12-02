@@ -31,3 +31,5 @@ add_executable(runTests ${SOURCE_FILES} ${TEST_FILES} skill/internal/ParseExcept
 # Link test executable against gtest & gtest_main
 target_link_libraries(runTests gtest gtest_main)
 add_test(runTests runTests)
+
+set_property(TARGET runTests PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
