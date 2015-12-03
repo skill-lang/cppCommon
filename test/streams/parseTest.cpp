@@ -17,6 +17,21 @@ namespace parseTest {
     using namespace skill::internal;
     using namespace skill::restrictions;
 
+    String date;
+    struct StringKeeper : public AbstractStringKeeper {
+        String date;
+    };
+
+    StringPool *initializeStrings(FileInputStream *in) {
+        auto keeper = new StringKeeper;
+        StringPool *pool = new StringPool(in, keeper);
+        keeper->date = pool->add("date");
+
+        date = keeper->date;
+        assert(-1 == date->getID());
+        return pool;
+    }
+
     //!create a new pool in the target type system
     AbstractStoragePool *testPool(TypeID typeID,
                                   String name,
@@ -49,7 +64,7 @@ namespace parseTest {
     }
 
     SkillFile *open(std::string path) {
-        return skill::internal::parseFile<testPool, testMake>(
+        return skill::internal::parseFile<initializeStrings, testPool, testMake>(
                 std::unique_ptr<FileInputStream>(new FileInputStream(path)), readOnly);
     }
 }
@@ -57,6 +72,8 @@ using namespace parseTest;
 
 TEST(Parser, Empty) {
     auto s = open("emptyBlocks.sf");
+    // date must not have been used by now
+    GTEST_ASSERT_EQ(-1, date->getID());
     ASSERT_TRUE(s);
     delete s;
 }
@@ -64,6 +81,18 @@ TEST(Parser, Empty) {
 TEST(Parser, Date) {
     try {
         auto s = open("date.sf");
+        delete s;
+    } catch (skill::SkillException e) {
+        GTEST_FAIL() << "an exception was thrown:" << std::endl << e.message;
+    }
+    GTEST_SUCCEED();
+}
+
+TEST(Parser, DatePreloadUsage) {
+    try {
+        auto s = open("date.sf");
+        // if date was used, then it must have a nonzero id now
+        GTEST_ASSERT_NE(-1, date->getID());
         delete s;
     } catch (skill::SkillException e) {
         GTEST_FAIL() << "an exception was thrown:" << std::endl << e.message;
