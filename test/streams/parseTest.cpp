@@ -36,7 +36,8 @@ namespace parseTest {
     AbstractStoragePool *testPool(TypeID typeID,
                                   String name,
                                   AbstractStoragePool *superPool,
-                                  std::set<TypeRestriction *> *restrictions) {
+                                  std::set<TypeRestriction *> *restrictions,
+                                  const AbstractStringKeeper *const keeper) {
         if (nullptr == superPool)
             return new UnknownBasePool(typeID, name, restrictions);
         else
