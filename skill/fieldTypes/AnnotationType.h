@@ -44,7 +44,7 @@ namespace skill {
              */
             AnnotationType *init() {
                 for (const auto &t : *types) {
-                    t->name->c_str();
+                    typesByName[t->name->c_str()] = t.get();
                 }
                 return this;
             }
