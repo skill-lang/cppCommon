@@ -49,6 +49,16 @@ namespace skill {
                 return this;
             }
 
+            /**
+             * map a type name to a pool
+             *
+             * @note intended for internal use
+             */
+            internal::AbstractStoragePool *type(const char *name) {
+                return typesByName[name];
+            }
+
+
             virtual api::Box read(streams::MappedInStream &in) const {
                 api::Box r;
                 TypeID t = (TypeID) in.v64();
