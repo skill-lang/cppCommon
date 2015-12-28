@@ -26,7 +26,7 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 file(GLOB_RECURSE TEST_FILES LIST_DIRECTORIES false test/*.cpp)
 
-add_executable(runTests ${SOURCE_FILES} ${TEST_FILES} skill/internal/ParseException.h skill/fieldTypes/AnnotationType.h)
+add_executable(runTests ${SOURCE_FILES} ${TEST_FILES})
 
 # Link test executable against gtest & gtest_main
 target_link_libraries(runTests gtest gtest_main)

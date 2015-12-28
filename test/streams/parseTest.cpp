@@ -5,7 +5,6 @@
 #include <gtest/gtest.h>
 #include "../../skill/streams/streams.h"
 #include "../../skill/internal/FileParser.h"
-#include "../../skill/internal/SkillState.h"
 #include "../../skill/internal/UnknownBasePool.h"
 #include "../../skill/fieldTypes/AnnotationType.h"
 
@@ -44,6 +43,16 @@ namespace parseTest {
             return superPool->makeSubPool(typeID, name, restrictions);
     }
 
+    struct TestSkillFile : public SkillFile {
+        TestSkillFile(streams::FileInputStream *in,
+                      WriteMode mode,
+                      internal::StringPool *stringPool,
+                      fieldTypes::AnnotationType *annotation,
+                      std::vector<std::unique_ptr<internal::AbstractStoragePool>> *types,
+                      typeByName_t *typesByName)
+                : SkillFile(in, mode, stringPool, annotation, types, typesByName) { }
+    };
+
     //! create a new state in the target type system
     SkillFile *testMake(FileInputStream *in,
                         WriteMode mode,
@@ -54,6 +63,8 @@ namespace parseTest {
                         std::vector<std::unique_ptr<MappedInStream>> &dataList) {
         //! TODO read field data
 
+        Annotation->init();
+
         // trigger allocation and instance creation
         for (auto &t : *types) {
             t.get()->allocateData();
@@ -61,7 +72,7 @@ namespace parseTest {
             //  StoragePool.setNextPools(t);
         }
 
-        return new SkillState(in, mode, String, Annotation, types, typesByName);
+        return new TestSkillFile(in, mode, String, Annotation, types, typesByName);
     }
 
     SkillFile *open(std::string path) {
