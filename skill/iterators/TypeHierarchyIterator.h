@@ -15,21 +15,21 @@ namespace skill {
          * iterates efficiently over the type hierarchy
          */
         class TypeHierarchyIterator :
-                public std::iterator<std::input_iterator_tag, AbstractStoragePool> {
+                public std::iterator<std::input_iterator_tag, const AbstractStoragePool> {
 
-            AbstractStoragePool *current;
-            AbstractStoragePool *const endParent;
+            const AbstractStoragePool *current;
+            const int endHeight;
 
         public:
-            TypeHierarchyIterator(AbstractStoragePool *first)
-                    : current(first), endParent(first->superPool) { }
+            TypeHierarchyIterator(const AbstractStoragePool *first)
+                    : current(first), endHeight(first->typeHierarchyHeight) { }
 
             TypeHierarchyIterator(const TypeHierarchyIterator &iter)
-                    : current(iter.current), endParent(iter.endParent) { }
+                    : current(iter.current), endHeight(iter.endHeight) { }
 
             TypeHierarchyIterator &operator++() {
                 const auto n = current->nextPool;
-                if (n && endParent != n->superPool)
+                if (n && endHeight < n->typeHierarchyHeight)
                     current = n;
                 else
                     current = nullptr;
@@ -43,32 +43,32 @@ namespace skill {
             }
 
             //! move to next position and return current element
-            AbstractStoragePool &next() {
+            const AbstractStoragePool *next() {
                 auto p = current;
                 const auto n = current->nextPool;
-                if (n && endParent != n->superPool)
+                if (n && endHeight < n->typeHierarchyHeight)
                     current = n;
                 else
                     current = nullptr;
-                return *p;
+                return p;
             }
 
             //! @return true, iff another element can be returned
-            bool hasNext() {
+            bool hasNext() const {
                 return current;
             }
 
-            bool operator==(const TypeHierarchyIterator &rhs) {
-                return current == rhs.current && endParent == rhs.endParent;
+            bool operator==(const TypeHierarchyIterator &rhs) const {
+                return current == rhs.current && endHeight == rhs.endHeight;
             }
 
-            bool operator!=(const TypeHierarchyIterator &rhs) {
-                return current != rhs.current || endParent != rhs.endParent;
+            bool operator!=(const TypeHierarchyIterator &rhs) const {
+                return current != rhs.current || endHeight != rhs.endHeight;
             }
 
-            AbstractStoragePool &operator*() { return *current; }
+            const AbstractStoragePool &operator*() const { return *current; }
 
-            AbstractStoragePool &operator->() { return *current; }
+            const AbstractStoragePool &operator->() const { return *current; }
         };
     }
 }

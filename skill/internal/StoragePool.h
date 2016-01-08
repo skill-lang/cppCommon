@@ -8,8 +8,18 @@
 #include "AbstractStoragePool.h"
 #include "Book.h"
 #include "../restrictions/TypeRestriction.h"
+#include "../iterators/TypeOrderIterator.h"
+#include "../iterators/DynamicDataIterator.h"
 
 namespace skill {
+    namespace iterators {
+        template<class T, class B>
+        class StaticDataIterator;
+
+        template<class T, class B>
+        class DynamicDataIterator;
+    }
+
     using restrictions::TypeRestriction;
     namespace internal {
 /**
@@ -27,7 +37,7 @@ namespace skill {
              * allocated when all instances are allocated, because by then, we can now
              * how many instances are to be read from file, which is quite helpful
              */
-            Book <T> *book;
+            Book<T> *book;
 
         public:
             /**
@@ -59,6 +69,12 @@ namespace skill {
              */
             std::vector<T *> newObjects;
 
+            //! static data iterator can traverse over new objects
+            friend class iterators::StaticDataIterator<T, B>;
+
+            //! dynamic data iterator can traverse over new objects
+            friend class iterators::DynamicDataIterator<T, B>;
+
             virtual SKilLID newObjectsSize() const {
                 return (SKilLID) newObjects.size();
             }
@@ -83,6 +99,18 @@ namespace skill {
             virtual api::Object *getAsAnnotation(SKilLID id) const {
                 return get(id);
             }
+
+            iterators::StaticDataIterator<T, B> staticInstances() const {
+                return iterators::StaticDataIterator<T, B>(this);
+            };
+
+            iterators::DynamicDataIterator<T, B> all() const {
+                return iterators::DynamicDataIterator<T, B>(this);
+            };
+
+            iterators::TypeOrderIterator<T, B> allInTypeOrder() const {
+                return iterators::TypeOrderIterator<T, B>(this);
+            };
         };
     }
 }
