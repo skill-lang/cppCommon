@@ -11,6 +11,7 @@ namespace skill {
     using internal::AbstractStoragePool;
 
     namespace iterators {
+
         /**
          * iterates efficiently over the type hierarchy
          */
@@ -20,7 +21,12 @@ namespace skill {
             const AbstractStoragePool *current;
             const int endHeight;
 
+
         public:
+            //! creates an empty iterator
+            TypeHierarchyIterator()
+                    : current(nullptr), endHeight(0) { }
+
             TypeHierarchyIterator(const AbstractStoragePool *first)
                     : current(first), endHeight(first->typeHierarchyHeight) { }
 
@@ -58,17 +64,29 @@ namespace skill {
                 return current;
             }
 
+            //! @note all empty iterators are considered equal
             bool operator==(const TypeHierarchyIterator &rhs) const {
-                return current == rhs.current && endHeight == rhs.endHeight;
+                return (!current && !rhs.current) || (current == rhs.current && endHeight == rhs.endHeight);
             }
 
+            //! @note all empty iterators are considered equal
             bool operator!=(const TypeHierarchyIterator &rhs) const {
-                return current != rhs.current || endHeight != rhs.endHeight;
+                return (current || rhs.current) && (current != rhs.current || endHeight != rhs.endHeight);
             }
 
             const AbstractStoragePool &operator*() const { return *current; }
 
             const AbstractStoragePool &operator->() const { return *current; }
+
+            //!iterators themselves can be used in generalized for loops
+            //!@note this will not consume the iterator
+            TypeHierarchyIterator begin() const {
+                return *this;
+            }
+
+            TypeHierarchyIterator end() const {
+                return TypeHierarchyIterator();
+            }
         };
     }
 }

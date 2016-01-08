@@ -111,6 +111,14 @@ namespace skill {
             iterators::TypeOrderIterator<T, B> allInTypeOrder() const {
                 return iterators::TypeOrderIterator<T, B>(this);
             };
+
+            iterators::DynamicDataIterator<T, B> begin() const {
+                return iterators::DynamicDataIterator<T, B>(this);
+            };
+
+            const iterators::DynamicDataIterator<T, B> end() const {
+                return iterators::DynamicDataIterator<T, B>();
+            }
         };
     }
 }

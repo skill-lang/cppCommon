@@ -7,7 +7,6 @@
 
 #include <iterator>
 
-
 namespace skill {
     namespace internal {
         template<class T, class B>
@@ -34,27 +33,30 @@ namespace skill {
             SKilLID secondIndex;
             const SKilLID lastBlock;
             SKilLID index;
-            SKilLID end;
+            SKilLID last;
 
         public:
+            //! creates an empty iterator
+            DynamicDataIterator() : ts(), secondIndex(0), lastBlock(0), index(0), last(0) { }
+
             DynamicDataIterator(const StoragePool<T, B> *p)
                     : ts(p), secondIndex(0), lastBlock(p->blocks.size()),
-                      index(0), end(0) {
+                      index(0), last(0) {
 
-                while (index == end && secondIndex < lastBlock) {
+                while (index == last && secondIndex < lastBlock) {
                     const auto &b = p->blocks[secondIndex];
                     index = b.bpo;
-                    end = index + b.dynamicCount;
+                    last = index + b.dynamicCount;
                     secondIndex++;
                 }
                 // mode switch, if there is no other block
-                if (index == end && secondIndex == lastBlock) {
+                if (index == last && secondIndex == lastBlock) {
                     secondIndex++;
                     while (ts.hasNext()) {
                         const StoragePool<T, B> *t = (const StoragePool<T, B> *) ts.next();
                         if (t->newObjects.size() != 0) {
                             index = 0;
-                            end = t->newObjects.size();
+                            last = t->newObjects.size();
                             break;
                         }
                     }
@@ -63,27 +65,27 @@ namespace skill {
 
             DynamicDataIterator(const DynamicDataIterator<T, B> &iter)
                     : ts(iter.ts), secondIndex(iter.secondIndex), lastBlock(iter.lastBlock),
-                      index(iter.index), end(iter.end) { }
+                      index(iter.index), last(iter.last) { }
 
             DynamicDataIterator &operator++() {
                 if (secondIndex <= lastBlock) {
                     index++;
-                    if (index == end) {
+                    if (index == last) {
                         const StoragePool<T, B> &p = (const StoragePool<T, B> &) *ts;
-                        while (index == end && secondIndex < lastBlock) {
+                        while (index == last && secondIndex < lastBlock) {
                             const auto &b = p.blocks[secondIndex];
                             index = b.bpo;
-                            end = index + b.dynamicCount;
+                            last = index + b.dynamicCount;
                             secondIndex++;
                         }
                         // mode switch, if there is no other block
-                        if (index == end && secondIndex == lastBlock) {
+                        if (index == last && secondIndex == lastBlock) {
                             secondIndex++;
                             while (ts.hasNext()) {
                                 const StoragePool<T, B> *t = (const StoragePool<T, B> *) ts.next();
                                 if (t->newObjects.size() != 0) {
                                     index = 0;
-                                    end = t->newObjects.size();
+                                    last = t->newObjects.size();
                                     break;
                                 }
                             }
@@ -91,12 +93,12 @@ namespace skill {
                     }
                 } else {
                     index++;
-                    if (index == end) {
+                    if (index == last) {
                         while (ts.hasNext()) {
                             const StoragePool<T, B> *t = (const StoragePool<T, B> *) ts.next();
                             if (t->newObjects.size() != 0) {
                                 index = 0;
-                                end = t->newObjects.size();
+                                last = t->newObjects.size();
                                 break;
                             }
                         }
@@ -118,21 +120,21 @@ namespace skill {
                     // @note increment happens before access, because we shifted data by 1
                     index++;
                     T *r = p.data[index];
-                    if (index == end) {
-                        while (index == end && secondIndex < lastBlock) {
+                    if (index == last) {
+                        while (index == last && secondIndex < lastBlock) {
                             const auto &b = p.blocks[secondIndex];
                             index = b.bpo;
-                            end = index + b.dynamicCount;
+                            last = index + b.dynamicCount;
                             secondIndex++;
                         }
                         // mode switch, if there is no other block
-                        if (index == end && secondIndex == lastBlock) {
+                        if (index == last && secondIndex == lastBlock) {
                             secondIndex++;
                             while (ts.hasNext()) {
                                 const StoragePool<T, B> *t = (const StoragePool<T, B> *) ts.next();
                                 if (t->newObjects.size() != 0) {
                                     index = 0;
-                                    end = t->newObjects.size();
+                                    last = t->newObjects.size();
                                     break;
                                 }
                             }
@@ -143,12 +145,12 @@ namespace skill {
                     const StoragePool<T, B> &p = (const StoragePool<T, B> &) *ts;
                     T *r = p.newObjects[index];
                     index++;
-                    if (index == end) {
+                    if (index == last) {
                         while (ts.hasNext()) {
                             const StoragePool<T, B> *t = (const StoragePool<T, B> *) ts.next();
                             if (t->newObjects.size() != 0) {
                                 index = 0;
-                                end = t->newObjects.size();
+                                last = t->newObjects.size();
                                 break;
                             }
                         }
@@ -159,30 +161,48 @@ namespace skill {
 
             //! @return true, iff another element can be returned
             bool hasNext() const {
-                return index != end;
+                return index != last;
             }
 
+            //! @note all empty iterators are considered equal
             bool operator==(const DynamicDataIterator<T, B> &iter) const {
-                return ts == iter.ts &&
-                       secondIndex == iter.secondIndex &&
-                       lastBlock == iter.lastBlock &&
-                       index == iter.index &&
-                       end == iter.end;
+                return (!hasNext() && !iter.hasNext())
+                       || (ts == iter.ts &&
+                           secondIndex == iter.secondIndex &&
+                           lastBlock == iter.lastBlock &&
+                           index == iter.index &&
+                           last == iter.last);
             }
 
-            bool operator!=(const DynamicDataIterator<T, B> &rhs) const {
-                return !(this->operator==(rhs));
+            //! @note all empty iterators are considered equal
+            bool operator!=(const DynamicDataIterator<T, B> &iter) const {
+                return (hasNext() || iter.hasNext())
+                       && !(ts == iter.ts &&
+                            secondIndex == iter.secondIndex &&
+                            lastBlock == iter.lastBlock &&
+                            index == iter.index &&
+                            last == iter.last);
             }
 
             T &operator*() const {
                 const StoragePool<T, B> &p = (const StoragePool<T, B> &) *ts;
                 // @note increment happens before access, because we shifted data by 1
-                return *(index < end ? p.data[index + 1] : p.newObjects[secondIndex]);
+                return *(index < last ? p.data[index + 1] : p.newObjects[secondIndex]);
             }
 
             T &operator->() const {
                 const StoragePool<T, B> &p = (const StoragePool<T, B> &) *ts;
-                return *(index < end ? p.data[index + 1] : p.newObjects[secondIndex]);
+                return *(index < last ? p.data[index + 1] : p.newObjects[secondIndex]);
+            }
+
+            //!iterators themselves can be used in generalized for loops
+            //!@note this will not consume the iterator
+            DynamicDataIterator<T, B> begin() const {
+                return *this;
+            }
+
+            DynamicDataIterator<T, B> end() const {
+                return DynamicDataIterator<T, B>();
             }
         };
     }
