@@ -7,6 +7,7 @@
 
 #include "FileStructure.h"
 #include "../api/AbstractField.h"
+#include <vector>
 
 namespace skill {
     namespace internal {
