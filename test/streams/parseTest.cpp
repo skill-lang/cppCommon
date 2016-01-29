@@ -48,7 +48,7 @@ namespace parseTest {
                       WriteMode mode,
                       internal::StringPool *stringPool,
                       fieldTypes::AnnotationType *annotation,
-                      std::vector<std::unique_ptr<internal::AbstractStoragePool>> *types,
+                      std::vector<internal::AbstractStoragePool*> *types,
                       typeByName_t *typesByName)
                 : SkillFile(in, mode, stringPool, annotation, types, typesByName) { }
     };
@@ -58,7 +58,7 @@ namespace parseTest {
                         WriteMode mode,
                         StringPool *String,
                         fieldTypes::AnnotationType *Annotation,
-                        std::vector<std::unique_ptr<AbstractStoragePool>> *types,
+                        std::vector<AbstractStoragePool*> *types,
                         typeByName_t *typesByName,
                         std::vector<std::unique_ptr<MappedInStream>> &dataList) {
         //! TODO read field data
@@ -67,7 +67,7 @@ namespace parseTest {
 
         // trigger allocation and instance creation
         for (auto &t : *types) {
-            t.get()->allocateData();
+            t->allocateData();
             //if (nullptr==t->superPool)
             //  StoragePool.setNextPools(t);
         }

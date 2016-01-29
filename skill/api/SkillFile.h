@@ -65,7 +65,7 @@ namespace skill {
                       WriteMode mode,
                       internal::StringPool *stringPool,
                       fieldTypes::AnnotationType *annotation,
-                      std::vector<std::unique_ptr<internal::AbstractStoragePool>> *types,
+                      std::vector<internal::AbstractStoragePool*> *types,
                       typeByName_t *typesByName);
 
         public:
@@ -103,7 +103,7 @@ namespace skill {
              * @throws SkillException
              *             if an inconsistency is found
              */
-            void check() { };
+            void check();
 
             /**
              * Check consistency and write changes to disk.

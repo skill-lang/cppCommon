@@ -79,7 +79,6 @@ namespace skill {
                 virtual std::pair<Box, Box> next() {
                     return boxx(*state++);
                 }
-
             };
 
 
