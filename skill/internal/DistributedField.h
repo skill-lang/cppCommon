@@ -6,6 +6,7 @@
 #define SKILL_CPP_COMMON_DISTRIBUTEDFIELD_H
 
 #include "FieldDeclaration.h"
+#include "../streams/SparseArray.h"
 #include <unordered_map>
 
 namespace skill {
@@ -15,7 +16,7 @@ namespace skill {
         protected:
             // data held as in storage pools
             // @note see paper notes for O(1) implementation
-            std::unordered_map<const api::Object *, api::Box> data; //Array[T]()
+            streams::SparseArray<api::Box> data; //Array[T]()
             std::unordered_map<const api::Object *, api::Box> newData;
 
         public:
@@ -23,7 +24,7 @@ namespace skill {
                              AbstractStoragePool *const owner)
                     : FieldDeclaration(type, name, owner), data(), newData() { }
 
-            virtual ~DistributedField() { }
+            virtual ~DistributedField();
 
             virtual api::Box getR(const api::Object *i);
 
@@ -32,6 +33,10 @@ namespace skill {
             virtual void read(const streams::MappedInStream *in, const Chunk *target);
 
             virtual bool check() const;
+
+        private:
+            // destructor helper method
+            inline void deleteBoxedContainer(api::Box b, const FieldType *const typeID);
         };
     }
 }
