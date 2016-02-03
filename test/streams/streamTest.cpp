@@ -3,15 +3,20 @@
 //
 
 #include <gtest/gtest.h>
-#include "../../skill/utils.h"
 #include "../../skill/streams/streams.h"
-#include "../../skill/api/SkillException.h"
+#include "../../skill/streams/FileOutputStream.h"
+#include "../../skill/streams/MappedOutStream.h"
 
 using namespace skill::streams;
 
 namespace streamTest {
     FileInputStream *open(std::string path = std::string("date.sf")) {
         return new FileInputStream(path);
+    }
+
+    std::unique_ptr<FileOutputStream> write() {
+        return std::unique_ptr<FileOutputStream>(
+                new FileOutputStream(std::string(tmpnam(nullptr)), false));
     }
 }
 using namespace streamTest;
@@ -137,4 +142,38 @@ TEST(Streams, ReadV64Large) {
     while (!s->eof())
         s->v64();
     delete s;
+}
+
+#include <chrono>
+
+TEST(Streams, Write10MV64) {
+    auto s = write();
+    auto t = std::chrono::system_clock::now();
+    for (int i = 0; i < 1e7; i++)
+        s->v64(random());
+    std::chrono::duration<double> took(std::chrono::system_clock::now() - t);
+    std::cout << "throughput: " << (s->fileSize() * 1e-6 / took.count()) << " MB/s" << std::endl;
+}
+
+TEST(Streams, Write100MBofV64Mapped) {
+    auto s = write();
+    {
+        auto t = std::chrono::system_clock::now();
+        auto map = s->jumpAndMap((long) 1e8);
+        while (map->has(9))
+            map->v64(random());
+        while (map->has(1))
+            map->i8(0);
+        s->unmap(map);
+        std::chrono::duration<double> took(std::chrono::system_clock::now() - t);
+        std::cout << "write throughput: " << (s->fileSize() * 1e-6 / took.count()) << " MB/s" << std::endl;
+    }
+    {
+        auto in = open(s->filePath());
+        auto t = std::chrono::system_clock::now();
+        while (!in->eof())
+            in->v64();
+        std::chrono::duration<double> took(std::chrono::system_clock::now() - t);
+        std::cout << "read throughput: " << (s->fileSize() * 1e-6 / took.count()) << " MB/s" << std::endl;
+    }
 }
