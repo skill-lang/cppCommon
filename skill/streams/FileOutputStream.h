@@ -8,6 +8,7 @@
 #include <string>
 #include <assert.h>
 #include "Stream.h"
+#include "../api/String.h"
 
 namespace skill {
     namespace streams {
@@ -166,6 +167,19 @@ namespace skill {
                             }
                         }
                     }
+                }
+            }
+
+            inline void put(const api::string_t *const s) {
+                const auto size = s->size();
+                if (size >= BUFFER_SIZE) {
+                    flush();
+                    fwrite(s->c_str(), 1, size, file);
+                    bytesWriten += size;
+                } else {
+                    require(size);
+                    for (uint8_t c : *s)
+                        *(position++) = c;
                 }
             }
         };

@@ -16,9 +16,6 @@ skill::streams::FileOutputStream::FileOutputStream(const std::string &path, bool
 }
 
 skill::streams::FileOutputStream::~FileOutputStream() {
-    // resize file
-    ftruncate(fileno(file), bytesWriten);
-
     fclose(file);
 }
 
@@ -32,6 +29,8 @@ void skill::streams::FileOutputStream::flush() {
 }
 
 skill::streams::MappedOutStream *skill::streams::FileOutputStream::jumpAndMap(long length) {
+    flush();
+
     // advance file position
     fseek(file, length, SEEK_CUR);
     bytesWriten += length;

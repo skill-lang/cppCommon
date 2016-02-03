@@ -6,18 +6,31 @@
 #define SKILL_CPP_COMMON_MAPPEDOUTSTREAM_H
 
 #include "Stream.h"
+#include "../api/String.h"
 
 namespace skill {
     namespace streams {
 
         class FileOutputStream;
 
+        /**
+         * @author Timm Felden
+         */
         struct MappedOutStream : public Stream {
             friend class FileOutputStream;
 
             MappedOutStream(void *begin, void *end) : Stream(begin, end) { }
 
             virtual ~MappedOutStream() { }
+
+            /**
+             * create a clone of this outstream, that is to be deleted by the caller
+             * and that will have virtually ranges between begin and end.
+             * @note DO NOT unmap result
+             */
+            MappedOutStream *clone(size_t begin, size_t end) const {
+                return new MappedOutStream(position + begin, position + end);
+            }
 
             inline void boolean(bool v) {
                 *(position++) = v ? 0xff : 0;
