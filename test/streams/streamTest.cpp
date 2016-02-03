@@ -14,9 +14,8 @@ namespace streamTest {
         return new FileInputStream(path);
     }
 
-    std::unique_ptr<FileOutputStream> write() {
-        return std::unique_ptr<FileOutputStream>(
-                new FileOutputStream(std::string(tmpnam(nullptr)), false));
+    FileOutputStream *write() {
+        return new FileOutputStream(std::string(tmpnam(nullptr)), false);
     }
 }
 using namespace streamTest;
@@ -176,4 +175,5 @@ TEST(Streams, Write100MBofV64Mapped) {
         std::chrono::duration<double> took(std::chrono::system_clock::now() - t);
         std::cout << "read throughput: " << (s->fileSize() * 1e-6 / took.count()) << " MB/s" << std::endl;
     }
+    delete s;
 }
