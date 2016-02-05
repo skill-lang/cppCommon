@@ -24,14 +24,14 @@ namespace skill {
         class FieldDeclaration : public api::AbstractField {
         public:
             //! skill field index
-            const SKilLID index;
+            const TypeID index;
 
             /**
              * reflective access to the enclosing type
              */
             AbstractStoragePool *const owner;
         protected:
-            FieldDeclaration(const FieldType *const type, api::String const name, const SKilLID index,
+            FieldDeclaration(const FieldType *const type, api::String const name, const TypeID index,
                              AbstractStoragePool *const owner)
                     : AbstractField(type, name), index(index), owner(owner) { }
 

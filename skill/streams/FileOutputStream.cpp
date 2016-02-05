@@ -49,7 +49,10 @@ skill::streams::MappedOutStream *skill::streams::FileOutputStream::jumpAndMap(lo
     }
 
     // resize file
-    ftruncate(fileno(file), bytesWriten);
+    if (ftruncate(fileno(file), bytesWriten)) {
+        fprintf(stderr, "mmap.c: %s\n errno was: %s\n", "failed to resize file", strerror(errno));
+        return NULL;
+    }
 
     auto map = new MappedOutStream(rval, (void *) (((long) rval) + bytesWriten));
     map->position = &((uint8_t *) rval)[bytesWriten - length];

@@ -21,7 +21,7 @@ namespace skill {
 
         public:
             DistributedField(const FieldType *const type, const api::string_t *name,
-                             const SKilLID index, AbstractStoragePool *const owner)
+                             const TypeID index, AbstractStoragePool *const owner)
                     : FieldDeclaration(type, name, index, owner), data(), newData() { }
 
             virtual ~DistributedField();
