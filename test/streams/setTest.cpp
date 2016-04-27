@@ -10,7 +10,7 @@ using namespace api;
 
 TEST(Set, Char) {
     Set<int8_t> store;
-    std::set<int8_t> &set = store;
+    std::unordered_set<int8_t> &set = store;
     set.insert('3');
     set.insert('a');
     GTEST_ASSERT_NE(set.end(), set.find('3'));
