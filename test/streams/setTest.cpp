@@ -9,7 +9,7 @@ using namespace skill;
 using namespace api;
 
 TEST(Set, Char) {
-    Set<int8_t> store;
+    Set<int8_t> store(2);
     std::unordered_set<int8_t> &set = store;
     set.insert('3');
     set.insert('a');

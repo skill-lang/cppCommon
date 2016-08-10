@@ -10,7 +10,7 @@ using namespace api;
 
 TEST(Map, IntFloat) {
     Map<int32_t, float> store;
-    std::map<int32_t, float> &map = store;
+    std::unordered_map<int32_t, float> &map = store;
     map[2] = 32;
     GTEST_ASSERT_EQ(32, map[2]);
 
@@ -25,7 +25,7 @@ TEST(Map, FloatIntInt) {
     Map<float, Map<int64_t, int64_t> *> store;
     Map<int64_t, int64_t> storeInner;
 
-    std::map<float, Map<int64_t, int64_t> *> *map = &store;
+    std::unordered_map<float, Map<int64_t, int64_t> *> *map = &store;
     (*map)[2] = &storeInner;
     storeInner[1] = 1;
     GTEST_ASSERT_EQ(1, map->at(2)->at(1));
