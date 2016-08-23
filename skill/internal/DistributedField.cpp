@@ -166,6 +166,7 @@ void DistributedField::write(streams::MappedOutStream *out) const {
     if (dynamic_cast<const ::skill::internal::SimpleChunk *>(dataChunks.back())) {
         // case c : SimpleChunk =>
         const SimpleChunk *c = (const SimpleChunk *) dataChunks.back();
+
         auto i = c->bpo;
         const auto end = i + c->count;
         while (i != end) {
