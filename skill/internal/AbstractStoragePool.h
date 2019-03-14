@@ -75,7 +75,7 @@ namespace skill {
              *       typing, when taking the pool from a map
              */
             inline void free(api::Object *target) {
-                // @note we do not need null check or 0 check, because both happen in SkillState
+                // @note we need no null or 0 check, because both happen in SkillState
                 target->id = 0;
                 deletedCount++;
             }

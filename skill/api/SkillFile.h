@@ -123,6 +123,14 @@ namespace skill {
              */
             void changeMode(WriteMode writeMode);
 
+            void free(Object *ref) const {
+                if (!ref || ref->isDeleted())
+                    return;
+
+                auto p = typesByName->at(strings->add(ref->skillName()));
+                p->free(ref);
+            }
+
             /**
              * Checks consistency of the current state of the file.
              *
