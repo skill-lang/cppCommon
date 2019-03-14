@@ -554,7 +554,11 @@ namespace skill {
 #pragma omp critical
                                     {
                                         std::stringstream message;
-                                        message << "ParseException while parsing field.\n Position"
+                                        message << "ParseException while parsing field: "
+                                                << f->owner->name->c_str()
+                                                << "."
+                                                << f->name->c_str()
+                                                << "\n Position: "
                                                 << in.getPosition()
                                                 << "\n reason: Did not consume all bytes." << std::endl;
                                         results.push_back(new std::string(message.str()));
@@ -565,7 +569,7 @@ namespace skill {
 #pragma omp critical
                                 {
                                     std::stringstream message;
-                                    message << "ParseException while parsing field.\n Position"
+                                    message << "ParseException while parsing field.\n Position "
                                             << in.getPosition()
                                             << "\n reason: "
                                             << e.message << std::endl;

@@ -136,7 +136,7 @@ namespace skill {
             }
 
             virtual api::Box read(streams::InStream &in) const {
-                api::Box r;
+                api::Box r = {0};
                 r.string = get((SKilLID) in.v64());
                 return r;
             }
@@ -183,6 +183,7 @@ namespace skill {
 
         private:
             friend class FileWriter;
+
             void prepareSerialization();
         };
     }

@@ -21,13 +21,15 @@ namespace skill {
         /**
          * This union represents the *unknown* object.
          * It is required for skill reflection.
+         *
+         * @note i64 has to be the first element to allow zero initialization.
          */
         union Box {
-            bool boolean;
-            int8_t i8;
-            int16_t i16;
-            int32_t i32;
             int64_t i64;
+            int32_t i32;
+            int16_t i16;
+            int8_t i8;
+            bool boolean;
             float f32;
             double f64;
             String string;

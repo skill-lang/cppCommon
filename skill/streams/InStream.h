@@ -29,14 +29,14 @@ namespace skill {
 
         protected:
 
-            InStream(void *base, void *end) : Stream(base, end) { }
+            InStream(void *base, void *end) : Stream(base, end) {}
 
         public:
 
             /**
              * Proper destruction happens in child destructors
              */
-            virtual ~InStream() { }
+            virtual ~InStream() {}
 
             inline int8_t i8() {
                 ensure(position < end);
@@ -44,27 +44,27 @@ namespace skill {
             }
 
             static inline api::Box i8Box(InStream &self) {
-                register api::Box r;
+                api::Box r = {0};
                 r.i8 = self.i8();
                 return r;
             }
 
             inline int16_t i16() {
                 ensure(position + 1 < end);
-                register uint16_t r = *(position++) << 8;
+                uint16_t r = *(position++) << 8;
                 r |= *(position++);
                 return r;
             }
 
             static inline api::Box i16Box(InStream &self) {
-                register api::Box r;
+                api::Box r = {0};
                 r.i16 = self.i16();
                 return r;
             }
 
             inline int32_t i32() {
                 ensure(position + 3 < end);
-                register uint32_t r = *(position++) << 24;
+                uint32_t r = *(position++) << 24;
                 r |= *(position++) << 16;
                 r |= *(position++) << 8;
                 r |= *(position++);
@@ -72,14 +72,14 @@ namespace skill {
             }
 
             static inline api::Box i32Box(InStream &self) {
-                register api::Box r;
+                api::Box r = {0};
                 r.i32 = self.i32();
                 return r;
             }
 
             inline int64_t i64() {
                 ensure(position + 7 < end);
-                register uint64_t r = 0;
+                uint64_t r = 0;
                 r |= ((uint64_t) *(position++)) << 56;
                 r |= ((uint64_t) *(position++)) << 48;
                 r |= ((uint64_t) *(position++)) << 40;
@@ -92,37 +92,37 @@ namespace skill {
             }
 
             static inline api::Box i64Box(InStream &self) {
-                register api::Box r;
+                api::Box r = {0};
                 r.i64 = self.i64();
                 return r;
             }
 
             inline int64_t v64() {
-                register uint64_t r, rval;
+                uint64_t v;
 
-                if (((rval = *(position++)) >= 0x80)) {
-                    rval = (rval & 0x7f) | (((r = *(position++)) & 0x7f) << 7);
+                if ((v = *(position++)) >= 0x80U) {
+                    v = (v & 0x7fU) | ((uint64_t) *(position++) << 7U);
 
-                    if ((r >= 0x80)) {
-                        rval |= ((r = *(position++)) & 0x7f) << 14;
+                    if (v >= 0x4000U) {
+                        v = (v & 0x3fffU) | ((uint64_t) *(position++) << 14U);
 
-                        if ((r >= 0x80)) {
-                            rval |= ((r = *(position++)) & 0x7f) << 21;
+                        if (v >= 0x200000U) {
+                            v = (v & 0x1fffffU) | ((uint64_t) *(position++) << 21U);
 
-                            if ((r >= 0x80)) {
-                                rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 28;
+                            if (v >= 0x10000000U) {
+                                v = (v & 0xfffffffU) | ((uint64_t) *(position++) << 28U);
 
-                                if ((r >= 0x80)) {
-                                    rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 35;
+                                if (v >= 0x800000000U) {
+                                    v = (v & 0x7ffffffffU) | ((uint64_t) *(position++) << 35U);
 
-                                    if ((r >= 0x80)) {
-                                        rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 42;
+                                    if (v >= 0x40000000000U) {
+                                        v = (v & 0x3ffffffffffU) | ((uint64_t) *(position++) << 42U);
 
-                                        if ((r >= 0x80)) {
-                                            rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 49;
+                                        if (v >= 0x2000000000000U) {
+                                            v = (v & 0x1ffffffffffffU) | ((uint64_t) *(position++) << 49U);
 
-                                            if ((r >= 0x80)) {
-                                                rval |= (((uint64_t) *(position++)) << 56);
+                                            if (v >= 0x100000000000000U) {
+                                                v = (v & 0xffffffffffffffU) | ((uint64_t) *(position++) << 56U);
                                             }
                                         }
                                     }
@@ -133,37 +133,37 @@ namespace skill {
                 }
                 if (position > end)
                     throw SkillException("unexpected end of stream");
-                return rval;
+                return v;
             }
 
             //! checked version of v64 that will not throw an exception
             //! @note checked means checked by the caller!
             inline int64_t v64checked() noexcept {
-                register uint64_t r, rval;
+                uint64_t v;
 
-                if (((rval = *(position++)) >= 0x80)) {
-                    rval = (rval & 0x7f) | (((r = *(position++)) & 0x7f) << 7);
+                if ((v = *(position++)) >= 0x80U) {
+                    v = (v & 0x7fU) | ((uint64_t) *(position++) << 7U);
 
-                    if ((r >= 0x80)) {
-                        rval |= ((r = *(position++)) & 0x7f) << 14;
+                    if (v >= 0x4000U) {
+                        v = (v & 0x3fffU) | ((uint64_t) *(position++) << 14U);
 
-                        if ((r >= 0x80)) {
-                            rval |= ((r = *(position++)) & 0x7f) << 21;
+                        if (v >= 0x200000U) {
+                            v = (v & 0x1fffffU) | ((uint64_t) *(position++) << 21U);
 
-                            if ((r >= 0x80)) {
-                                rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 28;
+                            if (v >= 0x10000000U) {
+                                v = (v & 0xfffffffU) | ((uint64_t) *(position++) << 28U);
 
-                                if ((r >= 0x80)) {
-                                    rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 35;
+                                if (v >= 0x800000000U) {
+                                    v = (v & 0x7ffffffffU) | ((uint64_t) *(position++) << 35U);
 
-                                    if ((r >= 0x80)) {
-                                        rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 42;
+                                    if (v >= 0x40000000000U) {
+                                        v = (v & 0x3ffffffffffU) | ((uint64_t) *(position++) << 42U);
 
-                                        if ((r >= 0x80)) {
-                                            rval |= ((uint64_t) (r = *(position++)) & 0x7f) << 49;
+                                        if (v >= 0x2000000000000U) {
+                                            v = (v & 0x1ffffffffffffU) | ((uint64_t) *(position++) << 49U);
 
-                                            if ((r >= 0x80)) {
-                                                rval |= (((uint64_t) *(position++)) << 56);
+                                            if (v >= 0x100000000000000U) {
+                                                v = (v & 0xffffffffffffffU) | ((uint64_t) *(position++) << 56U);
                                             }
                                         }
                                     }
@@ -172,41 +172,41 @@ namespace skill {
                         }
                     }
                 }
-                return rval;
+                return v;
             }
 
             static inline api::Box v64Box(InStream &self) {
-                register api::Box r;
+                api::Box r = {0};
                 r.i64 = self.v64();
                 return r;
             }
 
             inline float f32() {
-                register union {
-                    uint32_t i;
+                union {
+                    int32_t i;
                     float f;
-                } result;
+                } result = {0};
                 result.i = i32();
                 return result.f;
             }
 
             static inline api::Box f32Box(InStream &self) {
-                register api::Box r;
+                api::Box r = {0};
                 r.f32 = self.f32();
                 return r;
             }
 
             inline double f64() {
-                register union {
-                    uint64_t i;
+                union {
+                    int64_t i;
                     double f;
-                } result;
+                } result = {0};
                 result.i = i64();
                 return result.f;
             }
 
             static inline api::Box f64Box(InStream &self) {
-                register api::Box r;
+                api::Box r = {0};
                 r.f64 = self.f64();
                 return r;
             }
@@ -217,7 +217,7 @@ namespace skill {
             }
 
             static inline api::Box boolBox(InStream &self) {
-                register api::Box r;
+                api::Box r = {0};
                 r.boolean = self.boolean();
                 return r;
             }
